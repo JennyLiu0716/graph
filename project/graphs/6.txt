@@ -1,0 +1,5 @@
+c this is the graph with vertices {} and edges {}
+p edge 4 3
+e 1 2 
+e 2 3
+e 2 4
