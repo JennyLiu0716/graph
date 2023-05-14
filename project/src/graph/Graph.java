@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.LinkedList;
-//import utils.DList;
+import utils.DList;
 
   /**
    * todo: why use a doubly linked list for construction?
@@ -33,8 +33,8 @@ public class Graph {
         vertexNum = Integer.parseInt(problems[2]);
         edgeNum = Integer.parseInt(problems[3]);
         adjacentGraph = new int[vertexNum][];
-        LinkedList[] nodelist= new LinkedList[vertexNum];
-//        DList[] nodelist = new DList[vertexNum];
+//        LinkedList[] nodelist= new LinkedList[vertexNum];
+        DList[] nodelist = new DList[vertexNum];
         for (int i=0;i<edgeNum;i++) {
             String edge = sc.nextLine();
             String[] edges = edge.split(" ");
@@ -42,69 +42,35 @@ public class Graph {
             int b = Integer.parseInt(edges[2])-1;
             Node nodea = new Node(a);
             Node nodeb = new Node(b);
-            
-            if (nodelist[a]==null) {
-            	nodelist[a] = new LinkedList<Node>();
-            	Node head = new Node(-1);
-            	Node tail = new Node(-1);
-            	nodelist[a].add(head);
-            	nodelist[a].add(tail);
-            }
-//            if (nodelist[a]==null) nodelist[a] = new DList();
-            
-            if (nodelist[b]==null) {
-            	nodelist[b] = new LinkedList<Node>();
-            	Node head = new Node(-1);
-            	Node tail = new Node(-1);
-            	nodelist[b].add(head);
-            	nodelist[b].add(tail);
-            }
-//            if (nodelist[b]==null) nodelist[b] = new DList();
-            
-            int sizea = nodelist[a].size();
-            nodelist[a].add(sizea-1,nodeb);
-//            nodelist[a].insertLastNode(nodeb);
-            
-            Node firsta = (Node) nodelist[a].removeFirst();
-            firsta.degree++;
-            nodelist[a].addFirst(firsta);
-//            nodelist[a].head.degree++;
-            
-            int sizeb = nodelist[b].size();
-            nodelist[b].add(sizeb-1,nodea);
-//            nodelist[b].insertLastNode(nodea);
-            
-            Node firstb = (Node) nodelist[b].removeFirst();
-            firstb.degree++;
-            nodelist[b].addFirst(firstb);         
-//            nodelist[b].head.degree++;
+//            if (nodelist[a]==null) nodelist[a] = new LinkedList();
+            if (nodelist[a]==null) nodelist[a] = new DList();
+//            if (nodelist[b]==null) nodelist[b] = new LinkedList();
+            if (nodelist[b]==null) nodelist[b] = new DList();
+            nodelist[a].insertLastNode(nodeb);
+            nodelist[a].head.degree++;
+            nodelist[b].insertLastNode(nodea);
+            nodelist[b].head.degree++;
         }
         
         for(int k=0;k<nodelist.length;k++) {
-
-        	Node head = (Node) nodelist[k].getFirst();
-        	Node tail = (Node) nodelist[k].getLast();
-        	int size = nodelist[k].size();
-        	//degree starts from 0
-            adjacentGraph[k] = new int[head.degree];
-            Node nodee = head.next;
-
-//            System.out.println("size"+nodelist[k].size());
-
-            for (int i=1;i<size-1;i++) {
-            	Node node = (Node) nodelist[k].get(i);
-            	adjacentGraph[k][i-1] = (int) node.element;
+            adjacentGraph[k] = new int[nodelist[k].head.degree+1];
+            Node nodee = nodelist[k].head.next;
+            int index = 0;
+            while(nodee!=nodelist[k].tail) {
+                adjacentGraph[k][index] = (int)nodee.element;
+//                System.out.print(nodee.element);
+                index++;
+                nodee = nodee.next;
             }
-
+//            System.out.println();
         }
-        
-        for(int i=0;i<adjacentGraph.length;i++) {
-        	for (int j=0;j<adjacentGraph[i].length;j++) {
-        		System.out.print(adjacentGraph[i][j]+",");
-        	}System.out.println();
-        }
-        Graph g = new Graph();
-		g.adjacentGraph = adjacentGraph;
+//        for(int i=0;i<adjacentGraph.length;i++) {
+//            for(int j=0;j<adjacentGraph[i].length;j++) {
+//                System.out.print(adjacentGraph[i][j]+1);
+//            }System.out.println();
+//        }
+	Graph g = new Graph();
+	g.adjacentGraph = adjacentGraph;
         return g;
     }
     

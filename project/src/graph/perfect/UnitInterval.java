@@ -84,13 +84,11 @@ public class UnitInterval extends Interval {
         Scanner sc = new Scanner(System.in);
         while (sc.hasNext()) {
             String path = sc.nextLine().trim();
-//            System.out.println(path);
             if (path.equals("q"))
                 break;
             // read the file and process it
             boolean ans = recognize(g.readFile(path));
             System.out.println("The graph is " + (ans?"":"not ") + "a unit interval graph");
-//            ./graphs/1.txt
 
         }
     }

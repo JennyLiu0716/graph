@@ -1,12 +1,11 @@
 package graph.algorithms;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 import graph.Graph;
 import graph.Node;
-//import utils.DList;
+import utils.DList;
 
 /**
  * 
@@ -255,12 +254,7 @@ public class GraphSearch {
         Arrays.fill(LBFS, -1);
         
         // the initial linked list in the linked linked list
-        LinkedList<Node> initial_linkedlist= new LinkedList();
-    	Node head = new Node(-1);
-    	Node tail = new Node(-1);
-    	initial_linkedlist.add(head);
-    	initial_linkedlist.add(tail);
-//        DList<Node> initial_linkedlist = new DList<Node>();
+        DList<Node> initial_linkedlist = new DList<Node>();
         
         // nodelist -> a list to store the node by their original index
         // find a node in linked list in O(1)
@@ -270,24 +264,16 @@ public class GraphSearch {
         // through the implementation, the linked list in the lexicographical_linked list will be placed in the order of the lexicographical label
         // from head to tail, the lexicographical label will decrease
         // so the first element (linked list) in lexicographical_ linkedlist always has the largest label
-        LinkedList<LinkedList<Node>> lexicographical_linkedlist= new LinkedList<LinkedList<Node>>();
-//        lexicographical_linkedlist.add(head);
-//        lexicographical_linkedlist.add(tail);
-//        DList<DList<Node>> lexicographical_linkedlist = new DList<DList<Node>>();
+        DList<DList<Node>> lexicographical_linkedlist = new DList<DList<Node>>();
         
-        
-        // initialization: in the linked linked list, there is only one element (except head & tail) including all the vertex
+        // initialization: in the linked linked list, there is only one element (except head & tail)
+        // including all the vertex
         // insertFirst return the node of the linked linked list corresponding to the inserted lined list
-        lexicographical_linkedlist.add(initial_linkedlist);
-        LinkedList<Node> initial_list = lexicographical_linkedlist.getFirst();
-//        Node initial_node = lexicographical_linkedlist.insertFirst(initial_linkedlist);
+        Node initial_node = lexicographical_linkedlist.insertFirst(initial_linkedlist);
         
         // degree of the head of the element (linked list) in linked linked list represents when this linked list is created.
         // initialization -> -1; 
-        // pass by reference
-        Node inner_head = initial_list.getFirst();
-        inner_head.degree = -1;
-//        initial_node.degree = -1;
+        initial_node.degree = -1;
         
         // initialization: insert each node to the initial_lined list
         for (int i = 0; i < vertexNum; i++) {
@@ -297,44 +283,36 @@ public class GraphSearch {
             
             // curlistNode is the current linked list that the node belongs to
             // to implement O(1) when insertion new linked list with larger lexicographical label
-            node.curlist = initial_list;
-//            node.curlistnode = initial_node;
-            int size = initial_list.size();
-            initial_list.add(size-1,node);
-//            Node newNode = initial_linkedlist.insertFirstNode(node);
+            node.curlistNode = initial_node;
+            Node newNode = initial_linkedlist.insertFirstNode(node);
             
             // store the node according to the vertex number in nodelist
             nodelist[permutation[i]] = node;
         }
 
-        // select the vertex to be taken out and insert new linked list with larger lexicographic label
+        // select the vertex to be taken out 
+        // and insert new linked list with larger lexicographic label
         for (int i = 0; i < vertexNum; i++) {
             // unvisited vertices with the lexicographically largest label
-//            Node<DList<Node>> superNode = lexicographical_linkedlist.head.next;
-        	LinkedList<Node> superList = lexicographical_linkedlist.getFirst();
+            Node<DList<Node>> superNode = lexicographical_linkedlist.head.next;
             Node outNode;// node gonna be taken out
             // As we have sort the adjlist by permutation, 
             // the first element in the lexicographical label is the out node
             if (i == 0) {
                 outNode = nodelist[firstoutVertex];
             } else {
-//                outNode = superNode.element.head.next;
-            	outNode = superList.get(1);
+                outNode = superNode.element.head.next;
             }
             // System.out.println(outNode.element);
             // System.out.println(i);
-            superList.remove(outNode);
-//            removeNode(outNode);
+            removeNode(outNode);
 
             // curlistNode refer to the node (in linked linked list) of the this lexicographcial label
             // if the linked list is empty
-            if (superList.size()==2) {
-            	lexicographical_linkedlist.remove(superList);
+            if (((DList<Node>) outNode.curlistNode.element).isEmpty()) {
+                removeNode(outNode.curlistNode);
+                // System.out.println('a');
             }
-//            if (((DList<Node>) outNode.curlistNode.element).isEmpty()) {
-//                removeNode(outNode.curlistNode);
-//                // System.out.println('a');
-//            }
 
             // set the output list
             LBFS[(int) outNode.element] = i;
@@ -351,10 +329,8 @@ public class GraphSearch {
                 }
 
                 // remove the node from current list
-//                Node temp = removeNode(nodelist[adj[(int) outNode.element][j]]);
-                Node temp = nodelist[adj[(int) outNode.element][j]];
-                LinkedList current = temp.curlist;
-                current.remove(temp);
+                Node temp = removeNode(nodelist[adj[(int) outNode.element][j]]);
+                
                 // if the new linked list for a larger lexicographical label hasn't been created
                 // that is the previous linked list is not created in this selection(i)
                 if (temp.curlistNode.previous.degree != i) {
@@ -467,17 +443,17 @@ public class GraphSearch {
      * @param node
      * @return
      */
-//    private static Node removeNode(Node node) {
-//        Node temp = node.previous;
-//        node.previous.next = node.next;
-//        node.next.previous = temp;
-//        node.previous = null;
-//        node.next = null;
-//        // if (node.head.next.next==null) {
-//        // delete
-//        // }
-//        return node;
-//    }
+    private static Node removeNode(Node node) {
+        Node temp = node.previous;
+        node.previous.next = node.next;
+        node.next.previous = temp;
+        node.previous = null;
+        node.next = null;
+        // if (node.head.next.next==null) {
+        // delete
+        // }
+        return node;
+    }
 
     /*
      * LBFS -> sigma (this method is supposed to check whether an ordering is an umbrella ordering; using LBFS is misleading.)
