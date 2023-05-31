@@ -8,6 +8,10 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.LinkedList;
 
+/**
+* Explain the algorithm you use.
+
+*/
 public class Uig {
 	public static void OneUig(int nodeNum,int nameNum) {
 		
