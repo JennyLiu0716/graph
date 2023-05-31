@@ -80,15 +80,21 @@ public class UnitInterval extends Interval {
         if (0 == args.length)
             System.out.println("Please enter the path for the input grap, or q to quit:\n");
 
-        @SuppressWarnings("resource")
-        Scanner sc = new Scanner(System.in);
-        while (sc.hasNext()) {
-            String path = sc.nextLine().trim();
-            if (path.equals("q"))
-                break;
-            // read the file and process it
-            boolean ans = recognize(g.readFile(path));
-            System.out.println("The graph is " + (ans?"":"not ") + "a unit interval graph");
+//         @SuppressWarnings("resource")
+//         Scanner sc = new Scanner(System.in);
+//         while (sc.hasNext()) {
+//             String path = sc.nextLine().trim();
+//             if (path.equals("q"))
+//                 break;
+//             // read the file and process it
+//             boolean ans = recognize(g.readFile(path));
+//             System.out.println("The graph is " + (ans?"":"not ") + "a unit interval graph");
+        for(int i=1;i<=100;i++) {
+        	String path = "./graphs/UnitIntervalGraph_"+i+".txt";
+        	boolean ans = recognize(g.readFile(path));
+        	System.out.println(i+" The graph is " + (ans?"":"not ") + "a unit interval graph");
+        
+        }
 
         }
     }
