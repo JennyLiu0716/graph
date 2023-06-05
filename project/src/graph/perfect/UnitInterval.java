@@ -41,20 +41,24 @@ public class UnitInterval extends Interval {
         int endVertex = GraphSearch.bfsEndVertex(graph);
         int[] LBFS = GraphSearch.lbfsDelta(graph, endVertex);
 
-        // for(int i=0;i<LBFS.length;i++) {
-        // System.out.println(LBFS[i]);
-        // }
-
-        // for(int i=0;i<LBFS.length;i++) {
-        // System.out.println(vertexOrder[i]);
-        // }
-        boolean a = GraphSearch.intervalOrdering(graph, LBFS);
-        int n = LBFS.length;
-        int[] LBFSr = new int[n];
-        for (int i = 0; i < n; i++) {
-            LBFSr[n - i - 1] = LBFS[i];
+        int[] vertexOrder = new int[LBFS.length];
+        // convert the sigma order to the vertex order
+        // sigma -> index: vertex num; element: order
+        // vertexOrder -> index: order; element: vertex 
+        for (int i = 0; i < LBFS.length; i++) {
+        	// renum vertex
+            vertexOrder[LBFS[i]] = i;
         }
-        boolean b = GraphSearch.intervalOrdering(graph, LBFSr);
+        System.out.println(Arrays.toString(vertexOrder));
+        boolean a = GraphSearch.intervalOrdering(graph, vertexOrder);
+        int n = vertexOrder.length;
+        int[] vertexOrderR = new int[n];
+        for (int i = 0; i < n; i++) {
+        	vertexOrderR[n - i - 1] = vertexOrder[i];
+        }
+        boolean b = GraphSearch.intervalOrdering(graph, vertexOrderR);
+        System.out.println("a"+a);
+        System.out.println("b"+b);
         return a && b;
     }
 
