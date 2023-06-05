@@ -51,7 +51,7 @@ public class UnitIntervalGenerator {
      * @param random: if 0, all the generated graphs have the same order; otherwise, the order is at most n
      * @param number: the number of graphs to be generated
      */
-    public static void write(String path, String prefix, int n, boolean random, int number) {
+    public static void generate(String path, String prefix, int n, boolean random, int number) {
         for (int i = 1; i <= number; i++) {
             int n0 = n;
             if (random) {
