@@ -471,73 +471,41 @@ public class GraphSearch {
      * @param sigma
      * @return
      */
-    public static boolean intervalOrdering(Graph g, int[] sigma) {
+    public static boolean intervalOrdering(Graph g, int[] vertexOrder) {
         int[][] adj = g.adjacentGraph;
-        int[] vertexOrder = new int[sigma.length];
-        // convert the sigma order to the vertex order
-        // sigma -> index: vertex num; element: order
-        // vertexOrder -> index: order; element: vertex 
-        for (int i = 0; i < sigma.length; i++) {
-        	// renum vertex
-            vertexOrder[sigma[i]] = i;
+        
+        
+//        for (int i=0;i<adj.length;i++) {
+//        	System.out.print(i+":");
+//        	for(int j=0;j<adj[i].length;j++) {
+//        		System.out.print(adj[i][j]+",");
+//        	}System.out.println();
+//        }
+        
+        
+        int[] sigma = new int[vertexOrder.length];
+        for(int i=0;i<sigma.length;i++) {
+        	sigma[vertexOrder[i]] = i;
         }
-        // for (int i:sigma) System.out.println(i);
-        // 4 5 2 7 6 3 1 0
-        // for (int i:vertexOrder) System.out.println(i);
-        // 7 6 2 5 0 1 4 3
-
-        DList[] lists = new DList[sigma.length];
+        
+		
+        DList[] lists = new DList[vertexOrder.length];
         // sort the adjacent list within each vertex in decreasing order by the vertexOrder
         // and store the adjacent list for each vertex in the lists
         // lists is a list for DList, by vertexOrder
-        for (int i = 0; i < sigma.length; i++) {
-
-            // System.out.println();
-            for (int j = 0; j < adj[vertexOrder[i]].length; j++) {
-                if (lists[sigma[adj[vertexOrder[i]][j]]] == null) {
-                    lists[sigma[adj[vertexOrder[i]][j]]] = new DList();
+        for(int i=0;i<vertexOrder.length;i++) {
+        	int vertex = vertexOrder[i];
+        	int adjlength = adj[vertex].length;
+        	for(int j=0;j<adjlength;j++) {
+        		if (lists[sigma[adj[vertex][j]]] == null) {
+                    lists[sigma[adj[vertex][j]]] = new DList();
                 }
-
-                // System.out.println(lists[sigma[adj[vertexOrder[i]][j]]].tail.previous);
-                Node node = new Node(i);
-                lists[sigma[adj[vertexOrder[i]][j]]].insertFirstNode(node);
-                // System.out.println(lists[6].head.next.element);
-                // System.out.println(sigma[adj[vertexOrder[i]][j]]+" "+node.element);
-            }
-            // for(int k=0;k<lists.length;k++) {
-            // if (lists[k]==null) continue;
-            //// System.out.println(k+":");
-            // Node nodee = lists[k].head.next;
-            // while(nodee!=lists[k].tail) {
-            //// while(nodee.next!=null) {
-            // System.out.print(nodee.element);
-            //// System.out.println(node);
-            //// System.out.println(lists[i].tail);
-            // nodee = nodee.next;
-            // }
-            //// Node node = lists[i].tail.previous;
-            //// System.out.println(node);
-            //// System.out.println(lists[i].head);
-            //// while(node != lists[i].head) {
-            //// System.out.print(node.element);
-            //// node = node.previous;
-            //// }
-            // System.out.println();
-            // }
-
+        		Node node = new Node(i);
+        		lists[sigma[adj[vertex][j]]].insertFirstNode(node);
+        	}
         }
-        // for(int k=0;k<lists.length;k++) {
-        // if (lists[k]==null) continue;
-        // System.out.println(k+":");
-        // Node nodee = lists[k].head.next;
-        // while(nodee!=lists[k].tail) {
-        //
-        // System.out.print(nodee.element);
-        //
-        // nodee = nodee.next;
-        // }
-        // System.out.println();
-        // }
+        
+
 
         // check whether the k th list starts from tthe first number to i+1. 
         // check whether the number larger than k is exactly the difference between the first element and k
@@ -545,13 +513,26 @@ public class GraphSearch {
             Node nodee = lists[k].head.next;
             int begin = (int) nodee.element;
             int count = 0;
+//            System.out.println(k);
+            System.out.print(k+": ");
             while ((int) nodee.element > k) {
                 count++;
+                System.out.print((int)nodee.element);
                 nodee = nodee.next;
+                
             }
-            if ((begin - k) != count)
-                return false;
+            System.out.println();
+//            System.out.println(k+":");
+//            System.out.println(begin-k);
+//            System.out.println(count);
+            if ((begin - k) != count) {
+//            	System.out.println(begin-k);
+//            	System.out.println(count);
+            	System.out.println(false);
+            	return false;
+            } 
         }
+//        System.out.println(true);
         return true;
     }
 
