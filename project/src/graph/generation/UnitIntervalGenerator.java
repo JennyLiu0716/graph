@@ -9,8 +9,9 @@ import java.util.Scanner;
 import java.util.LinkedList;
 
 /**
-* Explain the algorithm you use.
+* To generate a unit interval graph, it suffices to specify the last neighbor of each vertex, such that the sequence is not non-decreasing.
 */
+
 public class UnitIntervalGenerator {
 
     /**
