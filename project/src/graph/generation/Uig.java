@@ -51,8 +51,10 @@ public class Uig {
 			if (length-begin>0) {
 				p = randomNum.nextInt(length-begin);
 				p = p+begin ;
+				previous = p;
 				llarray[p].add(numArray[i]);
 			}else {
+				previous = length-1;
 				llarray[length-1].add(numArray[i]);
 			}
 
