@@ -33,10 +33,9 @@ public class UnitIntervalGenerator {
         return lastNeighbors;
   }
 
-    /**
-     * Assign a random last neighbor for each vertex in order.
-     * 
-     * Shuffle the numbers when generating the ajdacency lists.
+   /**
+     * Write the generated graph into a file
+     * Shuffle the numbers of the vertices.
      */
     static void write(int[] lastNeighbors, String filename) {
     }
