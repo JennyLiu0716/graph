@@ -21,10 +21,6 @@ public class GraphSearch {
     // O(n) ok
     // reference:
     // https://www.geeksforgeeks.org/level-node-tree-source-node-using-bfs/
-
-    /*
-     * meaning of x?
-     */
 	
     /**
      * A linear-time algorithm to find the end vertex using BFS.
@@ -52,7 +48,7 @@ public class GraphSearch {
         // create a queue
         Queue<Integer> que = new LinkedList<Integer>();
 
-        int x=0; // root
+        int x=0; // x = 0 -> choose the first element as the root. 
         // enqueue element x
         que.add(x);
 
