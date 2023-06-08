@@ -51,7 +51,7 @@ public class UnitIntervalGenerator {
      * @param n: number of vertices
      * @return permutation
      */
-    static int[] randomOrder(int n) {
+    static int[] shuffle(int n) {
 		int nodeNum = n;
 		int numbers[] = new int[nodeNum];
 		
@@ -140,7 +140,7 @@ public class UnitIntervalGenerator {
         	int nodeNum = lastNeighbors.length;
         	// get the new order for the nodes
         	// seperate 2 functions for JUnit test
-        	int numbers[] = randomOrder(nodeNum);
+        	int numbers[] = shuffle(nodeNum);
             write(lastNeighbors,filename,numbers);
         }
     }
