@@ -58,6 +58,8 @@ class UnitIntervalGeneratorTest {
 	            // Print the string
 	        	pointer++;
 	        	if (pointer>=3) {
+				// test whether the two nodes in the file, exactly have edge in there original order
+				// convert the nodes to lastNeighbors
 	        		String[] splitS = s.split("\\s+");
 	        		int first = index[Integer.parseInt(splitS[1])];
 	        		int second = index[Integer.parseInt(splitS[2])];
