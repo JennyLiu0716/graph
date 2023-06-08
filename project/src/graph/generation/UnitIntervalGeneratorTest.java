@@ -41,7 +41,7 @@ class UnitIntervalGeneratorTest {
 			int[] last = UnitIntervalGenerator.generate(i);
 			String filename = "./graphs/"+"test"+String.format("%4d", i) +".txt";
 			// shuffle
-			int[] numbers = UnitIntervalGenerator.randomOrder(last.length);
+			int[] numbers = UnitIntervalGenerator.shuffle(last.length);
 			// reverse numbers with its index
 			int[] index = new int[numbers.length+1];
 			for(int j=0;j<numbers.length;j++) {
