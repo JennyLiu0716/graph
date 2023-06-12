@@ -21,6 +21,10 @@ public class GraphSearch {
     // O(n) ok
     // reference:
     // https://www.geeksforgeeks.org/level-node-tree-source-node-using-bfs/
+
+    /*
+     * meaning of x?
+     */
 	
     /**
      * A linear-time algorithm to find the end vertex using BFS.
@@ -36,7 +40,7 @@ public class GraphSearch {
      * @param g graph
      * @return endVertex
      */
-    public static int bfsEndVertex(Graph g) {
+    public static int bfsEndVertex(Graph g, int source) {
         int[][] adj = g.adjacentGraph;
         int endVertex = 0;
         // array to store level of each node
@@ -48,7 +52,7 @@ public class GraphSearch {
         // create a queue
         Queue<Integer> que = new LinkedList<Integer>();
 
-        int x=0; // x = 0 -> choose the first element as the root. 
+        int x=source; // x = 0 -> choose the first element as the root. 
         // enqueue element x
         que.add(x);
 
@@ -148,11 +152,28 @@ public class GraphSearch {
      * @return
      */
     public static int[] lbfsDelta(Graph g, int endVertex) {
-        int[][] adjgraph = g.adjacentGraph;
-        int vertexNum = adjgraph.length;
-        int[] degree = new int[vertexNum]; // store degree of node(index)
-        int[][] adj = new int[adjgraph.length][];
         
+    	int[][] adjgraph = g.adjacentGraph;
+        
+    	// the permutation is the vertices order of degree from max to min
+        int[] degree = getDegreeOrder(g);
+        
+        // sort adj list by the degree
+        int[][] adj = sortAdjacencyLists(adjgraph, degree);
+
+        return lbfsCore(adj, degree, endVertex);
+    }
+    
+    /**
+     * through this function, we get the vertices order for degree from max to min
+     * @param g - graph
+     * @return vertex order
+     */
+    public static int[] getDegreeOrder(Graph g) {
+    	
+    	int[][] adjgraph = g.adjacentGraph;
+    	int vertexNum = adjgraph.length;
+    	int[] degree = new int[vertexNum]; // store degree of node(index)
         // sort vertex by degree 
         for (int i = 0; i < vertexNum; i++) {
             degree[i] = adjgraph[i].length;
@@ -161,11 +182,8 @@ public class GraphSearch {
         // for(int i=0;i<degree.length;i++) {
         // System.out.print(degree[i]);
         // }
-        
-        // sort adj list by the degree
-        adj = sortAdjacencyLists(adjgraph, degree);
-
-        return lbfsCore(adj, degree, endVertex);
+        return degree;
+    	
     }
 
      /**
@@ -234,14 +252,6 @@ public class GraphSearch {
     public static int[] lbfsCore(int[][] adj, int[] permutation,int firstoutVertex) {
         int vertexNum = adj.length;
 
-        // for(int i=0;i<adj.length;i++) {
-        // System.out.print(i);
-        // for(int j=0;j<adj[i].length;j++) {
-        // System.out.print(adj[i][j]);
-        // }
-        // System.out.println();
-        // }
-
         // LBFS -> to be returned.
         // the LBFS list : index -> vertex number; element -> the order of the vertex to be taken out (from 0)
         int[] LBFS = new int[vertexNum];
@@ -296,6 +306,7 @@ public class GraphSearch {
             // the first element in the lexicographical label is the out node
             if (i == 0) {
                 outNode = nodelist[firstoutVertex];
+//                System.out.println((int)outNode.element);
             } else {
                 outNode = superNode.element.head.next;
             }
@@ -458,7 +469,7 @@ public class GraphSearch {
      * A linear-time algorithm to check whether the list {@code sigma} is an umbrella ordering
      * 
      * First, renumber the vertices an get the {@code vertexOrder}
-     * Second, sort the adjaceny lish for each vertex in the decreasing order. 
+     * Second, sort the adjacency list for each vertex in the decreasing order. 
      * Use an array of linked list for each vertex. Each linked list is the adjacency list of the vertex.
      * Traverse the vertex by {@code vertexOrder}, insert the vertex into its neighbor's adjacency list.
      * Check whether the ith linked list starts from [the first element, the second element, ... , i+1] 
