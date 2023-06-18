@@ -14,8 +14,13 @@ public class DList<T> {
         head.previous = null;
         tail.previous = head;
         tail.next = null;
+        //head&tail's degree: when the linked list was created
+        // - used in lbfscore
         head.degree = -1;
         tail.degree = -1;
+        //head&tail's predegree: when the list was created from...
+//        head.predegree = -2;
+//        tail.predegree = -2;
     }
 
     public boolean isEmpty() {
@@ -70,8 +75,19 @@ public class DList<T> {
 
 
     }
+    
+    public void printToString() {
+    	Node node = this.head.next;
+//    	System.out.println(node.element);
+    	while(node!=this.tail) {
+    		System.out.print((int)node.element+" ");
+    		node = node.next;
+    	}
+    	System.out.println();
+    }
 
      
     
 
 }
+
