@@ -131,13 +131,11 @@ public class GraphSearch {
             return lbfsCore(adjgraph, lbfsOrdering, 0);
         } else if (num == 2) {
         	// LBFS+ -> from the vertex with lexicographically largest label, select the last order in the lbfsOrdering list
-            int[][] adj = new int[adjgraph.length][];
             // reorder the adj list according to lbfsOrdering
-            adj = sortAdjacencyLists(adjgraph, lbfsOrdering);
+            int[][] adj = sortAdjacencyLists(adjgraph, lbfsOrdering);
             return lbfsCore(adj, lbfsOrdering, lbfsOrdering[lbfsOrdering.length - 1]);
         }
         return null;
-
     }
 
     
@@ -281,6 +279,8 @@ public class GraphSearch {
         // initialization -> -1; 
         initial_node.degree = -1;
         
+//        System.out.println("permutation"+Arrays.toString(permutation));
+        
         // initialization: insert each node to the initial_lined list
         for (int i = 0; i < vertexNum; i++) {
         	// insertion by the permutation
@@ -290,11 +290,14 @@ public class GraphSearch {
             // curlistNode is the current linked list that the node belongs to
             // to implement O(1) when insertion new linked list with larger lexicographical label
             node.curlistNode = initial_node;
-            Node newNode = initial_linkedlist.insertFirstNode(node);
+            initial_linkedlist.insertFirstNode(node);
             
             // store the node according to the vertex number in nodelist
             nodelist[permutation[i]] = node;
         }
+        
+//        System.out.println(firstoutVertex);
+//        initial_linkedlist.printToString();
 
         // select the vertex to be taken out 
         // and insert new linked list with larger lexicographic label
@@ -308,6 +311,10 @@ public class GraphSearch {
                 outNode = nodelist[firstoutVertex];
 //                System.out.println((int)outNode.element);
             } else {
+            	while(superNode.element.isEmpty()) {
+            		superNode = superNode.next;
+            	}
+//            	superNode.element.printToString();
                 outNode = superNode.element.head.next;
             }
             // System.out.println(outNode.element);
@@ -337,7 +344,7 @@ public class GraphSearch {
 
                 // remove the node from current list
                 Node temp = removeNode(nodelist[adj[(int) outNode.element][j]]);
-                
+//                System.out.println("superlist"+temp.element);
                 // if the new linked list for a larger lexicographical label hasn't been created
                 // that is the previous linked list is not created in this selection(i)
                 if (temp.curlistNode.previous.degree != i) {
@@ -345,12 +352,14 @@ public class GraphSearch {
                     // create a new linked list, and insert before the current one
                     Node newlistNode = lexicographical_linkedlist.insertBefore(temp.curlistNode, newlist);
                     newlistNode.degree = i;	// mark the new linked list is created in the selection (i)
+//                    newlistNode.predegree = temp.curlistNode.degree;
                     newlist.insertFirstNode(temp); // insert the node into new list
                     
-                    // check whether need to remove the odd linked list (empty)
-                    if (((DList<Node>) temp.curlistNode.element).isEmpty()) {
-                        removeNode(temp.curlistNode);
-                    }
+                    // check whether need to remove the old linked list (empty)
+//                    if (((DList<Node>) temp.curlistNode.element).isEmpty()) {
+//                        removeNode(temp.curlistNode);
+//                    	temp.curlistNode.degree = -2;
+//                    }
                     
                     // change the node's curlistNode to the new linked list (node element in the large linked linked list)
                     temp.curlistNode = newlistNode;
@@ -365,9 +374,9 @@ public class GraphSearch {
                     // change the curlistNode 
                     temp.curlistNode = temp.curlistNode.previous;
                     // check whether need to delete the odd linked list (if empty)
-                    if (((DList<Node>) temp.curlistNode.next.element).isEmpty()) {
-                        removeNode(temp.curlistNode.next);
-                    }
+//                    if (((DList<Node>) temp.curlistNode.next.element).isEmpty()) {
+//                        removeNode(temp.curlistNode.next);
+//                    }
                     // System.out.println(temp.curlistNode.previous);
 
                     // System.out.println(temp.curlistNode);
@@ -376,23 +385,9 @@ public class GraphSearch {
                 // System.out.println(temp.element);
 
             }
-            // Node node = nodesList.head.next;
-            // while(node!=nodesList.tail) {
-            // System.out.print('!');
-            // DList list = (DList) node.element;
-            // Node innerNode = list.head.next;
-            // while(innerNode!=list.tail) {
-            // System.out.print(innerNode.element);
-            // innerNode = innerNode.next;
-            // }
-            // System.out.println();
-            // node = node.next;
-            // }
-            // System.out.println();
+       
         }
-        // for(int i=0;i<LBFS.length;i++) {
-        // System.out.println(LBFS[i]);
-        // }
+
         return LBFS;
     }
 
@@ -521,21 +516,21 @@ public class GraphSearch {
             int begin = (int) nodee.element;
             int count = 0;
 //            System.out.println(k);
-            System.out.print(k+": ");
+//            System.out.print(k+": ");
             while ((int) nodee.element > k) {
                 count++;
-                System.out.print((int)nodee.element);
+//                System.out.print((int)nodee.element);
                 nodee = nodee.next;
                 
             }
-            System.out.println();
+//            System.out.println();
 //            System.out.println(k+":");
 //            System.out.println(begin-k);
 //            System.out.println(count);
             if ((begin - k) != count) {
 //            	System.out.println(begin-k);
 //            	System.out.println(count);
-            	System.out.println(false);
+//            	System.out.println(false);
             	return false;
             } 
         }
