@@ -145,13 +145,13 @@ public class UnitIntervalGenerator {
         }
     }
     
-    public static void main(String[] args) {
-//    	generate(10);
-//    	int[] temp = new int[10];
-//    	write(temp,"asd");
-    	String path = "./graphs/";
-    	generate(path, "test",100,true,100);
-    }
+//     public static void main(String[] args) {
+// //    	generate(10);
+// //    	int[] temp = new int[10];
+// //    	write(temp,"asd");
+//     	String path = "./graphs/";
+//     	generate(path, "test",100,true,100);
+//     }
 
         
 }
