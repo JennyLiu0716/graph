@@ -2,6 +2,7 @@ package graph.perfect;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.Scanner;
 import graph.Graph;
 import graph.algorithms.GraphSearch;
@@ -12,8 +13,9 @@ import graph.algorithms.GraphSearch;
  *
  *         A bfs search to find an end vertex, and then LBFS delta from this
  *         vertex.
- * 
- *         Check whether the ordering is a valide umbrella ordering.
+ * 			
+ * 		   input : ./graphs/1.txt
+ *         Check whether the ordering is a valid umbrella ordering.
  * 
  */
 public class UnitInterval extends Interval {
@@ -38,9 +40,12 @@ public class UnitInterval extends Interval {
          */
 
         // LBFSdelta
-        int endVertex = GraphSearch.bfsEndVertex(graph);
+        int endVertex = GraphSearch.bfsEndVertex(graph,0);
+//        System.out.println(endVertex);
+        
         int[] LBFS = GraphSearch.lbfsDelta(graph, endVertex);
-
+        
+        
         int[] vertexOrder = new int[LBFS.length];
         // convert the sigma order to the vertex order
         // sigma -> index: vertex num; element: order
@@ -49,7 +54,7 @@ public class UnitInterval extends Interval {
         	// renum vertex
             vertexOrder[LBFS[i]] = i;
         }
-        System.out.println(Arrays.toString(vertexOrder));
+//        System.out.println(Arrays.toString(vertexOrder));
         boolean a = GraphSearch.intervalOrdering(graph, vertexOrder);
         int n = vertexOrder.length;
         int[] vertexOrderR = new int[n];
@@ -57,9 +62,11 @@ public class UnitInterval extends Interval {
         	vertexOrderR[n - i - 1] = vertexOrder[i];
         }
         boolean b = GraphSearch.intervalOrdering(graph, vertexOrderR);
-        System.out.println("a"+a);
-        System.out.println("b"+b);
+//        System.out.println("a"+a);
+//        System.out.println("b"+b);
         return a && b;
+        
+        
     }
 
    /**
@@ -84,22 +91,24 @@ public class UnitInterval extends Interval {
         if (0 == args.length)
             System.out.println("Please enter the path for the input grap, or q to quit:\n");
 
-//         @SuppressWarnings("resource")
-//         Scanner sc = new Scanner(System.in);
-//         while (sc.hasNext()) {
-//             String path = sc.nextLine().trim();
-//             if (path.equals("q"))
-//                 break;
-//             // read the file and process it
-//             boolean ans = recognize(g.readFile(path));
-//             System.out.println("The graph is " + (ans?"":"not ") + "a unit interval graph");
+//        @SuppressWarnings("resource")
+//        Scanner sc = new Scanner(System.in);
+//        while (sc.hasNext()) {
+//            String path = sc.nextLine().trim();
+//            if (path.equals("q"))
+//                break;
+//            // read the file and process it
+//            boolean ans = recognize(g.readFile(path));
+//            System.out.println("The graph is " + (ans?"":"not ") + "a unit interval graph");
+        
+        int length = (int) (Math.log10(100) + 1);
+        String format = "%0"+length+"d";
         for(int i=1;i<=100;i++) {
-        	String path = "./graphs/UnitIntervalGraph_"+i+".txt";
+        	String filename = "test"+String.format(format, i) +".txt";
+        	String path = "./graphs/"+filename;
         	boolean ans = recognize(g.readFile(path));
         	System.out.println(i+" The graph is " + (ans?"":"not ") + "a unit interval graph");
         
         }
-
-//         }
     }
 }
