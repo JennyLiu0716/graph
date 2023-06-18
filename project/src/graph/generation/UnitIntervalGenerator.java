@@ -132,7 +132,7 @@ public class UnitIntervalGenerator {
             // if random, there are at most n vertices
             if (random) {
                 Random rand = new Random();
-                n0 = rand.nextInt(n)+1;
+                n0 = rand.nextInt(n-1)+2;
             }
             //generate last neighbors and write into files
             String filename = path+prefix+String.format(format, i) +".txt";
@@ -145,13 +145,13 @@ public class UnitIntervalGenerator {
         }
     }
     
-//    public static void main(String[] args) {
-////    	generate(10);
-////    	int[] temp = new int[10];
-////    	write(temp,"asd");
-//    	String path = "./graphs/";
-//    	generate(path, "uig",10,true,10);
-//    }
+    public static void main(String[] args) {
+//    	generate(10);
+//    	int[] temp = new int[10];
+//    	write(temp,"asd");
+    	String path = "./graphs/";
+    	generate(path, "test",100,true,100);
+    }
 
         
 }
