@@ -31,7 +31,7 @@ public class GraphSearch {
         for (int i = 1; i < g.vertexNum; i++) {
             if (level[i] < level[endVertex]) continue;
             if (level[i] == level[endVertex] && adj[i].length >= adj[endVertex].length) continue;
-                endVertex = i;
+            endVertex = i;
         }
         return endVertex;
      }
