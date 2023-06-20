@@ -27,84 +27,56 @@ public class GraphSearch {
      */
 	
     /**
-     * A linear-time algorithm to find the end vertex using BFS.
-     * By lemma 3.7, a vertex in the last level with the minimum degree is an end vertex
+     * To find an end vertex of unit interval graph using BFS:
+     * a vertex in the last level with the minimum degree is an end vertex
      * 
-     * Algorithm: 
-     * Create the tree, a queue to store the nodes and insert the root or starting node in the queue. Create an extra array level of size v (number of vertices) and create a visited array.
-     * Run a loop while size of queue is greater than 0.
-     * Mark the current node as visited.
-     * Pop one node from the queue and insert its childrens (if present) and update the size of the inserted node as level[child] = level[node] + 1.
-     * Record the largest level
-     * Choose the vertex in last level with minimum degree as end vertex
-     * @param g graph
-     * @return endVertex
+     * @param g: the input graph
+     * @return endVertex: an end vertex
      */
-    public static int bfsEndVertex(Graph g, int source) {
+    public static int endVertexBFS(Graph g) {
         int[][] adj = g.adjacentGraph;
+        int n = g.vertexNum;
+        int[] level = bfsConnected(g, 0);
         int endVertex = 0;
-        // array to store level of each node
-        int vertexNum = adj.length;
-        int lastLevel = 0;
-        int level[] = new int[vertexNum];
-        boolean marked[] = new boolean[vertexNum];
-
-        // create a queue
-        Queue<Integer> que = new LinkedList<Integer>();
-
-        int x=source; // x = 0 -> choose the first element as the root. 
-        // enqueue element x
-        que.add(x);
-
-        // initialize level of source node to 0
-        level[x] = 0;
-
-        // marked it as visited
-        marked[x] = true;
-
-        // do until queue is empty
-        while (que.size() > 0) {
-
-            // get the first element of queue
-            x = que.peek();
-
-            // dequeue element
-            que.remove();
-
-            // traverse neighbors of node x
-            for (int i = 0; i < adj[x].length; i++) {
-                // b is neighbor of node x
-                int b = adj[x][i];
-                // System.out.println(x+" "+i);
-                // if b is not marked already
-                if (!marked[b]) {
-
-                    // enqueue b in queue
-                    que.add(b);
-
-                    // level of b is level of x + 1
-                    level[b] = level[x] + 1;
-                    if (level[b] > lastLevel)
-                        lastLevel = level[b];
-
-                    // mark b
-                    marked[b] = true;
-                }
-            }
-        }
-        
-        // endvertex -> minimum degree in largest level
-        int minDegree = vertexNum;
-        for (int i = 0; i < level.length; i++) {
-            if (level[i] == lastLevel) {
-                // graph[i].length = degree
-                if (adj[i].length < minDegree) {
-                    minDegree = adj[i].length;
-                    endVertex = i;
-                }
-            }
+        for (int i = 1; i < n; i++) {
+            if (level[i] < level[endVertex]) continue;
+            if (level[i] == level[endVertex] && adj[i].length >= adj[endVertex].length) continue;
+                endVertex = i;
         }
         return endVertex;
+     }
+    //    public static int[] bfs(Graph g) {return bfs(g, 0);}
+    /**
+     * The algorithm bfsConnected only works on connected graphs.
+     * It returns the level of each vertex as an array.
+     *
+     * @param g: the input graph, assumed to be connected
+     * @param source: the starting vertex, default to be 0
+     * @return the level of each vertex
+    */
+    public static int[] bfsConnected(Graph g, int source) {
+        int[][] adj = g.adjacentGraph;
+        // array to store level of each node
+        int n = g.vertexNum;
+        int level[] = new int[n];  // -1 means unprocessed
+        Arrays.fill(level, -1);  
+        // the queue for vertices that have not been processesd.
+        Queue<Integer> que = new LinkedList<Integer>();
+        que.add(source);        // enqueue the source element
+        level[source] = 0;        // set source as the root, the only vertex at level zero
+
+        while (!que.isEmpty()) {
+            int x = que.remove();
+            // traverse neighbors of node x
+            for (int i = 0; i < adj[x].length; i++) {
+                int b = adj[x][i];                // the ith neighbor of x
+                if (level[b] < 0) {                // unprocessed
+                    que.add(b);
+                    level[b] = level[x] + 1;
+                }
+            }
+        }
+       return level;
     }
 
     // ok O(m+n)
