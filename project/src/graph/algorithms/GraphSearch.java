@@ -17,15 +17,6 @@ import utils.DList;
  * 
  */
 public class GraphSearch {
-    // a vertex in the last level with the minimum degree is an end vertex
-    // O(n) ok
-    // reference:
-    // https://www.geeksforgeeks.org/level-node-tree-source-node-using-bfs/
-
-    /*
-     * meaning of x?
-     */
-	
     /**
      * To find an end vertex of unit interval graph using BFS:
      * a vertex in the last level with the minimum degree is an end vertex
@@ -79,9 +70,6 @@ public class GraphSearch {
        return level;
     }
 
-    // ok O(m+n)
-    // LBFS & LBFS+
-    
     /**
      * The connector between the caller and LBFS algorithm.
      * Preprocessing for normal LBFS and LBFS plus.
