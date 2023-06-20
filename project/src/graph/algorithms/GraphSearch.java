@@ -26,10 +26,9 @@ public class GraphSearch {
      */
     public static int endVertexBFS(Graph g) {
         int[][] adj = g.adjacentGraph;
-        int n = g.vertexNum;
         int[] level = bfsConnected(g, 0);
         int endVertex = 0;
-        for (int i = 1; i < n; i++) {
+        for (int i = 1; i < g.vertexNum; i++) {
             if (level[i] < level[endVertex]) continue;
             if (level[i] == level[endVertex] && adj[i].length >= adj[endVertex].length) continue;
                 endVertex = i;
