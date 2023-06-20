@@ -18,8 +18,8 @@ import utils.DList;
  */
 public class GraphSearch {
     /**
-     * To find an end vertex of unit interval graph using BFS:
-     * a vertex in the last level with the minimum degree is an end vertex (Lemma 3.7 of [Cao 2021]).
+     * To find an end vertex of unit interval graph using BFS (Lemma 3.7 of [Cao 2021]):
+     * a vertex in the last level with the minimum degree is an end vertex.
      * 
      * @param g: the input graph
      * @return endVertex: an end vertex
