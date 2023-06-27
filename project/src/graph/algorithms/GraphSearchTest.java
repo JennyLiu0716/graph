@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import graph.Graph;
 
 class GraphSearchTest2 {
+	
 
 	@Test
 	void test() throws FileNotFoundException {
@@ -37,37 +38,56 @@ class GraphSearchTest2 {
 	      		}
 	      	}
 	      	
-//	      	// test function: lbfsCore/lbfsDelta - error in test case 79 
-//	      	int endVertex = GraphSearch.bfsEndVertex(graph,0);
-//	      	int[] LBFS = GraphSearch.lbfsCore(adj, degree, endVertex);
-////	      	System.out.println(endVertex+" "+LBFS[0]);
-//	      	assertTrue(LBFS[endVertex]==0);
-//	      	int[] nodeOrder = new int[LBFS.length];
-//	      	for(int j=0;j<LBFS.length;j++) {
-//	      		nodeOrder[LBFS[j]] = j;
-//	      	}
-//	      	System.out.println(Arrays.toString(adj[0]));
-//	      	for(int j=1;j<LBFS.length;j++) {
-//	      		boolean found = false;
-//	      		int t = nodeOrder[j];
-//	      		for(int k=0;k<adj[nodeOrder[j-1]].length;k++) {
-//	      			System.out.println(t+" "+adj[nodeOrder[j-1]][k]);
-//	      			if (adj[nodeOrder[j-1]][k]==t) {
-//	      				found = true;
-//	      				continue;
-//	      			}
-//	      		}
-//	      		if (!found) {
-//	      			System.out.println(Arrays.toString(nodeOrder));
-//	      			System.out.println(j);
-//	      			System.out.println(endVertex);
-//	      		}
-//	      		System.out.println(i);
-//	      		assertTrue(found);
-//	      	}
+	      	// test function: bfsConnected
+	      	int[] level = GraphSearch.bfsConnected(graph,0);
+	      	int l = 1;
+	      	boolean found ;
+	      	// for each vertex on level (i), it must be a neighbor of one of the vertex on level (i-1)
+	      	for(int j=0;j<level.length&&level[j]!=0;j++) {
+	      		found = false;
+	      		l = level[j];
+	      		for(int k = 0;k<level.length&&k!=j;k++) {
+	      			if (level[k]==l-1) {
+	      				for(int m=0;m<adj[k].length;m++) {
+	      					if (adj[k][m]==j) {
+	      						found = true;
+	      						k = level.length;
+	      						break;
+	      					}
+	      				}
+	      			}
+	      		}
+//	      		System.out.println(j);
+	      		assertTrue(found);
+	      		l++;
+	      	}
+	      	
+	      	// test function: endVertexBFS
+	      	// test by definition: min degree on max level
+	      	int endVertex = GraphSearch.endVertexBFS(graph);
+//	      	Arrays.sort(level);
+//	        int largestLevel = level[level.length - 1];
+	      	int largestlevel = 0;
+	      	for(int j=0;j<level.length;j++) {
+	      		if (level[j]>largestlevel) {
+	      			largestlevel = level[j];
+	      		}
+	      	}
+	        assertTrue(level[endVertex]==largestlevel);
+	        for(int j=0;j<level.length&&j!=endVertex;j++) {
+	        	if (level[j]==largestlevel) {
+	        		assertTrue(adj[endVertex].length<=adj[j].length);
+	        	}
+	        }
+	        
+	        
+	      	
+	      	
+	      	
+
 	      	
 	     // test function: lbfsCore
-	      	int endVertex = GraphSearch.bfsEndVertex(graph,0);
+	      	
 	      	int[] LBFS = GraphSearch.lbfsCore(adj, degree, endVertex);
 	      	System.out.println(i);
 	      	System.out.println(Arrays.toString(LBFS));
