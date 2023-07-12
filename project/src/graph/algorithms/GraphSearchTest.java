@@ -5,31 +5,48 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 
+import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 
 import graph.Graph;
+import graph.perfect.*;
 
-class GraphSearchTest2 {
+
+class GraphSearchTest {
 	
-
-	@Test
-	void test() throws FileNotFoundException {
+	Graph[] graphs = new Graph[101];
+	
+	@BeforeClass
+	void init() throws FileNotFoundException {
 		Graph g = new Graph();
-		for(int i=7;i<=100;i++) {
-//			System.out.print(i+" ");
+		for(int i=1;i<=100;i++) {
 			String path = "./graphs/UnitIntervalGraph_"+i+".txt";
 	      	Graph graph = g.readFile(path);
+	      	graphs[i] = graph;
+	    }
+	}
+	
+	@Test
+	void getDegreeOrderTest() throws FileNotFoundException {
+		Graph graph = new Graph();
+		for(int i=1;i<=100;i++) {
+			String path = "./graphs/UnitIntervalGraph_"+i+".txt";
+	      	Graph g = graph.readFile(path);
 	      	int[][] adjgraph = g.adjacentGraph;
 	      	int[] degree = GraphSearch.getDegreeOrder(g);
-	      	
-	      	// test function: getDegreeOrder - pass
 	      	for(int j=1;j<degree.length;j++) {
 	      		assertTrue(adjgraph[degree[j]].length<=adjgraph[degree[j-1]].length);
-//	      		System.out.print(adjgraph[degree[j]].length);
 	      	}
-//	      	System.out.println();
-	      	
-	      	// test function: sortAdjacencyLists
+		}
+	}
+	@Test
+	void sortAdjacencyListsTest() throws FileNotFoundException {
+		Graph graph = new Graph();
+		for(int i=1;i<=100;i++) {
+			String path = "./graphs/UnitIntervalGraph_"+i+".txt";
+	      	Graph g = graph.readFile(path);
+			int[][] adjgraph = g.adjacentGraph;
+			int[] degree = GraphSearch.getDegreeOrder(g);
 	      	int[][] adj = GraphSearch.sortAdjacencyLists(adjgraph, degree);
 	      	for(int j=0;j<adj.length;j++) {
 	      		for(int k=1;k<adj[j].length;k++) {
@@ -37,10 +54,19 @@ class GraphSearchTest2 {
 //	      			System.out.println(adjgraph[adj[j][k]].length+" "+adjgraph[adj[j][k-1]].length);
 	      		}
 	      	}
-	      	
-	      	// test function: bfsConnected
-	      	int[] level = GraphSearch.bfsConnected(graph,0);
+		}
+	}
+	@Test
+	void bfsConnectedTest() throws FileNotFoundException {
+		Graph graph = new Graph();
+		for(int i=1;i<=100;i++) {
+			String path = "./graphs/UnitIntervalGraph_"+i+".txt";
+	      	Graph g = graph.readFile(path);
+	      	int[] level = GraphSearch.bfsConnected(g,0);
 	      	int l = 1;
+	      	int[][] adjgraph = g.adjacentGraph;
+	      	int[] degree = GraphSearch.getDegreeOrder(g);
+	      	int[][] adj = GraphSearch.sortAdjacencyLists(adjgraph, degree);
 	      	boolean found ;
 	      	// for each vertex on level (i), it must be a neighbor of one of the vertex on level (i-1)
 	      	for(int j=0;j<level.length&&level[j]!=0;j++) {
@@ -61,13 +87,24 @@ class GraphSearchTest2 {
 	      		assertTrue(found);
 	      		l++;
 	      	}
-	      	
-	      	// test function: endVertexBFS
-	      	// test by definition: min degree on max level
-	      	int endVertex = GraphSearch.endVertexBFS(graph);
+		}
+	}
+	@Test
+	void endVertexBFSTest() throws FileNotFoundException {
+		Graph graph = new Graph();
+		for(int i=1;i<=100;i++) {
+			String path = "./graphs/UnitIntervalGraph_"+i+".txt";
+	      	Graph g = graph.readFile(path);
+			// test by definition: min degree on max level
+			int[][] adjgraph = g.adjacentGraph;
+	      	int[] degree = GraphSearch.getDegreeOrder(g);
+
+			int[][] adj = GraphSearch.sortAdjacencyLists(adjgraph, degree);
+	      	int endVertex = GraphSearch.endVertexBFS(g);
 //	      	Arrays.sort(level);
 //	        int largestLevel = level[level.length - 1];
 	      	int largestlevel = 0;
+	      	int[] level = GraphSearch.bfsConnected(g,0);
 	      	for(int j=0;j<level.length;j++) {
 	      		if (level[j]>largestlevel) {
 	      			largestlevel = level[j];
@@ -79,16 +116,20 @@ class GraphSearchTest2 {
 	        		assertTrue(adj[endVertex].length<=adj[j].length);
 	        	}
 	        }
-	        
-	        
+		}
+	}
+	@Test
+	void lbfsCoreTest() throws FileNotFoundException {
+		Graph graph = new Graph();
+		for(int i=1;i<=100;i++) {
+			String path = "./graphs/UnitIntervalGraph_"+i+".txt";
+	      	Graph g = graph.readFile(path);
+			int[][] adjgraph = g.adjacentGraph;
 	      	
-	      	
-	      	
-
-	      	
-	     // test function: lbfsCore
-	      	
-	      	int[] LBFS = GraphSearch.lbfsCore(adj, degree, endVertex);
+			int[] degree = GraphSearch.getDegreeOrder(g);
+			int[][] adj = GraphSearch.sortAdjacencyLists(adjgraph, degree);
+			int endVertex = GraphSearch.endVertexBFS(g);
+			int[] LBFS = GraphSearch.lbfsCore(adj, degree, endVertex);
 	      	System.out.println(i);
 	      	System.out.println(Arrays.toString(LBFS));
 	      	int[] nodeOrder = new int[LBFS.length];
@@ -128,5 +169,5 @@ class GraphSearchTest2 {
 	      	
 		}
 	}
-
+	
 }
