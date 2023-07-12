@@ -132,17 +132,21 @@ class GraphSearchTest {
 			int[] LBFS = GraphSearch.lbfsCore(adj, degree, endVertex);
 	      	System.out.println(i);
 	      	System.out.println(Arrays.toString(LBFS));
+	      	// turn lbfs order into node order
 	      	int[] nodeOrder = new int[LBFS.length];
 	      	for(int j=0;j<LBFS.length;j++) {
 	      		nodeOrder[LBFS[j]] = j;
 	      	}
 	      	System.out.println(Arrays.toString(nodeOrder));
+	      	
 	      	int[][] label = new int[LBFS.length][LBFS.length];
 	      	for(int j=0;j<LBFS.length;j++) {
 	      		for(int k=0;k<LBFS.length;k++) {
 	      			label[j][k]=0;
 	      		}
 	      	}
+	      	// test by the definition of lbfs, lexicographically larger
+	      	// L1 is lexicographically larger than L2 if the minimum element in L1\L2 & L2\L1 belongs to L1
 	      	int[] takeOut = new int[nodeOrder.length];
 	      	Arrays.fill(takeOut, 0);
 	      	for(int j=0;j<LBFS.length-1;j++) {
@@ -153,13 +157,13 @@ class GraphSearchTest {
 	      				label[adj[nodeOrder[j]][k]][nodeOrder[j]]=1;
 	      			}
 	      		}
+	      		// after taking out nodeOrder[j], 
+	      		// the label of nodeOrder[j+1] is lexicographically larger than any node from j+2 to n;
 	      		for(int k=j+2;k<LBFS.length;k++) {
 	      			for(int m = 0;m<LBFS.length;m++) {
+	      				// find the minimum element in L1\L2 & L2\L1
 		      			if (label[nodeOrder[j+1]][m]+label[nodeOrder[k]][m]==1) {
-//		      				System.out.println(i);
-//		      				System.out.println(j+1+" "+k);
-//		      				System.out.println("j"+Arrays.toString(label[nodeOrder[j+1]]));
-//		      				System.out.println("k"+Arrays.toString(label[nodeOrder[k]]));
+		      				// belong to L1
 		      				assertTrue(label[nodeOrder[j+1]][m]==1);
 		      				break;
 		      			}
