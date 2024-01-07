@@ -1,5 +1,0 @@
-c this is the interval graph [3, 4, 3, 2, 4, 1, 2, 1]
-p edge 4 3
-e 1 2
-e 2 4
-e 3 4

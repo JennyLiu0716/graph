@@ -1,17 +1,18 @@
 package graph.algorithms;
 
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 
 import org.junit.BeforeClass;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import graph.Graph;
 import graph.perfect.*;
 
-
+// doesn't work, not compile
 class GraphSearchTest {
 	
 	Graph[] graphs = new Graph[101];

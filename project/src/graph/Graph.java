@@ -3,75 +3,97 @@ package graph;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-import java.util.LinkedList;
-import utils.DList;
+import java.util.Vector;
 
-  /**
-   * todo: why use a doubly linked list for construction?
-   * doubly linked list supports traversing in both ways due to previous and next pointer
-   * Node deletion can be done in O(1) 
-   * A new node may be readily added before an existing node
-   */
+import org.w3c.dom.css.ViewCSS;
+
+/**
+ * graph contruction - adjacency list representation
+ */
 public class Graph {
-    public int[][]adjacentGraph;
+    public Vector<Integer>[] adjacentGraph;
     public int vertexNum;
     public int edgeNum;
 
-  /**
-   * Load the graph from a text file in the DIMACS format.
-   *
-   * @param the path of the graph file
-   * @return a Graph
-   * @throws FileNotFoundException when the file cannot be found.
-   */
-    public Graph readFile(String path) throws FileNotFoundException {
+    /**
+     * Load the graph from a text file in the DIMACS format.
+     * 
+     * The graph file format:
+     * https://users.aalto.fi/~tjunttil/bliss/fileformat.html
+     * 
+     * Comments:
+     * In the beginning of the file, there can be comment lines that start with the
+     * character c.
+     * For instance {c The constraint graph of a CNF formula}.
+     * 
+     * Problem definition line:
+     * After the comment lines, there must be the “problem definition line” of the
+     * form {p edge N E}.
+     * Here N is the number of vertices and E is the number of edges in the graph.
+     * In the file format, the vertices are numbered from 1 to N.
+     * 
+     * Vertex colors:
+     * After the problem definition line, the next lines of the form {n v c} define
+     * the colors of the vertices
+     * v is the number of a vertex and c is the color of that vertex.
+     * The color c should be a non-negative integer fitting in the domain of the
+     * unsigned int type in the C++ programming language.
+     * It is not necessary to include a color definition line for each vertex, the
+     * default color for a vertex is 0.
+     * If the color of a vertex is defined more than once, the last definition
+     * applies.
+     * 
+     * Edges. Following the color definition lines, the next E lines of the form {e
+     * v1 v2}
+     * describe the edges in the graph, where 1 ≤ v1,v2 ≤ N are the numbers of the
+     * vertices connected by the edge.
+     * Multiple definitions of the same edge are ignored.
+     * 
+     * @param the path of the graph file
+     * @return a Graph
+     * @throws FileNotFoundException when the file cannot be found.
+     */
+    public void readFile(String path) throws FileNotFoundException {
         File file = new File(path);
         Scanner sc = new Scanner(file);
-        String comment = sc.nextLine();
-        String problem = sc.nextLine();
-        String[] problems = problem.split(" ");
-        vertexNum = Integer.parseInt(problems[2]);
-        edgeNum = Integer.parseInt(problems[3]);
-        adjacentGraph = new int[vertexNum][];
-//        LinkedList[] nodelist= new LinkedList[vertexNum];
-        DList[] nodelist = new DList[vertexNum];
-        for (int i=0;i<edgeNum;i++) {
-            String edge = sc.nextLine();
-            String[] edges = edge.split(" ");
-            int a = Integer.parseInt(edges[1])-1;
-            int b = Integer.parseInt(edges[2])-1;
-            Node nodea = new Node(a);
-            Node nodeb = new Node(b);
-//            if (nodelist[a]==null) nodelist[a] = new LinkedList();
-            if (nodelist[a]==null) nodelist[a] = new DList();
-//            if (nodelist[b]==null) nodelist[b] = new LinkedList();
-            if (nodelist[b]==null) nodelist[b] = new DList();
-            nodelist[a].insertLastNode(nodeb);
-            nodelist[a].head.degree++;
-            nodelist[b].insertLastNode(nodea);
-            nodelist[b].head.degree++;
+        String curline = sc.nextLine();
+        String[] lineStrings = curline.split(" ");
+
+        // ignore the comment lines
+        while (lineStrings[0].equals("c")) {
+            curline = sc.nextLine();
+            lineStrings = curline.split(" ");
         }
-        
-        for(int k=0;k<nodelist.length;k++) {
-            adjacentGraph[k] = new int[nodelist[k].head.degree+1];
-            Node nodee = nodelist[k].head.next;
-            int index = 0;
-            while(nodee!=nodelist[k].tail) {
-                adjacentGraph[k][index] = (int)nodee.element;
-//                System.out.print(nodee.element);
-                index++;
-                nodee = nodee.next;
-            }
-//            System.out.println();
+
+        // process the problem definition line
+        this.vertexNum = Integer.parseInt(lineStrings[2]);
+        this.edgeNum = Integer.parseInt(lineStrings[3]);
+        this.adjacentGraph = new Vector[vertexNum];
+        for(int i = 0; i<vertexNum;i++){
+            this.adjacentGraph[i] = new Vector<>();
         }
-//        for(int i=0;i<adjacentGraph.length;i++) {
-//            for(int j=0;j<adjacentGraph[i].length;j++) {
-//                System.out.print(adjacentGraph[i][j]+1);
-//            }System.out.println();
-//        }
-	Graph g = new Graph();
-	g.adjacentGraph = adjacentGraph;
-        return g;
+
+        // ignore the vertex colors
+        curline = sc.nextLine();
+        lineStrings = curline.split(" ");
+        while (lineStrings[0].equals("n")) {
+            curline = sc.nextLine();
+            lineStrings = curline.split(" ");
+        }
+
+        // process the edges, nodes from [1...n] to [0...n-1]
+        while (lineStrings[0].equals("e")) {
+
+            int vertex1 = Integer.parseInt(lineStrings[1]) - 1;
+            int vertex2 = Integer.parseInt(lineStrings[2]) - 1;
+
+            this.adjacentGraph[vertex1].add(vertex2);
+            this.adjacentGraph[vertex2].add(vertex1);
+
+            if (sc.hasNextLine()) {
+                curline = sc.nextLine();
+                lineStrings = curline.split(" ");
+            }else break;
+        }
     }
-    
 }

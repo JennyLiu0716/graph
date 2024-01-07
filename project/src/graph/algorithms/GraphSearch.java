@@ -2,10 +2,13 @@ package graph.algorithms;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Vector;
+import java.util.stream.IntStream;
+
 import graph.Graph;
 import graph.Node;
-import utils.DList;
+import utils.DoublyLinkedList;
+import utils.Functions;
 
 /**
  * 
@@ -13,487 +16,512 @@ import utils.DList;
  *
  *         common graph algorithms.
  * 
- *         todo: expand the comment.
+ *         Todo: the GraphSearch class now can only be used for connected graph
+ *         recognition
+ *         Idea: Detect the connected components in the disconnected graph, for
+ *         each component, run the algorithm, the graph is a UIG(IG) if and only
+ *         if every connected component is a UIG(IG)
  * 
  */
 public class GraphSearch {
+
     /**
-     * To find an end vertex of unit interval graph using BFS (Lemma 3.7 of [Cao 2021]):
-     * a vertex in the last level with the minimum degree is an end vertex.
+     * UPDATED
+     * To find an end vertex of unit interval graph using BFS
+     * Lemma 3.7 - Let G be unit interval graph. Let T be a BFS tree of G. A vertex
+     * in the last level With the minimum degree is an end vertex.
      * 
      * @param g: the input graph
-     * @return endVertex: an end vertex
+     * @return an end vertex
      */
-    public static int endVertexBFS(Graph g) {
-        int[][] adj = g.adjacentGraph;
-        int[] level = bfsConnected(g, 0);
-        int endVertex = 0;
-        for (int i = 1; i < g.vertexNum; i++) {
-            if (level[i] < level[endVertex]) continue;
-            if (level[i] == level[endVertex] && adj[i].length >= adj[endVertex].length) continue;
-            endVertex = i;
+    public static int findendVertex(Graph g) {
+
+        int n = g.vertexNum;
+        Vector<Integer>[] adj = g.adjacentGraph;
+        int[] level = BFS(g);
+        int lastlevel = level[n];
+
+        int mindegree = n;
+        int endVertex = -1;
+
+        for (int i = 0; i < n; i++) {
+            if (level[i] == lastlevel) {
+                if (adj[i].size() < mindegree) {
+                    mindegree = adj[i].size();
+                    endVertex = i;
+                }
+            }
         }
         return endVertex;
-     }
-    //    public static int[] bfs(Graph g) {return bfs(g, 0);}
+    }
+
     /**
-     * The algorithm bfsConnected only works on connected graphs.
-     * It returns the level of each vertex as an array.
+     * UPDATED
+     * a modified BFS, which records the level of each node in the BFS tree and the
+     * largest level of the tree
+     * 
+     * https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/
      *
-     * @param g: the input graph, assumed to be connected
+     * @param g:      the input graph, assumed to be connected
      * @param source: the starting vertex, default to be 0
      * @return the level of each vertex
-    */
-    public static int[] bfsConnected(Graph g, int source) {
-        int[][] adj = g.adjacentGraph;
-        // array to store level of each node
-        int n = g.vertexNum;
-        int level[] = new int[n];  // -1 means unprocessed
-        Arrays.fill(level, -1);  
-        // the queue for vertices that have not been processesd.
-        Queue<Integer> que = new LinkedList<Integer>();
-        que.add(source);        // enqueue the source element
-        level[source] = 0;        // set source as the root, the only vertex at level zero
+     */
+    private static int[] BFS(Graph g) {
+        Vector<Integer>[] adj = g.adjacentGraph;
+        int V = g.vertexNum;
 
-        while (!que.isEmpty()) {
-            int x = que.remove();
-            // traverse neighbors of node x
-            for (int i = 0; i < adj[x].length; i++) {
-                int b = adj[x][i];                // the ith neighbor of x
-                if (level[b] < 0) {                // unprocessed
-                    que.add(b);
-                    level[b] = level[x] + 1;
+        // Mark all the vertices as not visited(By default set as false)
+        boolean visited[] = new boolean[V];
+
+        // Create a queue for BFS
+        LinkedList<Integer> queue = new LinkedList<Integer>();
+
+        // to find endvertex, we need to record the level of each node in the BFS tree
+        // use level[V] to pass the largest level of the bfs tree
+        int[] level = new int[V + 1];
+
+        // Mark the first node as visited and enqueue it
+        visited[0] = true;
+        queue.add(0);
+        level[0] = 0;
+        int largestLevel = 0;
+
+        while (queue.size() != 0) {
+
+            // Dequeue a vertex from queue and print it
+            int s = queue.poll();
+
+            // Get all adjacent vertices of the dequeued vertex s
+            // If an adjacent has not been visited, then mark it visited and enqueue it
+            for (int j : adj[s]) {
+                if (!visited[j]) {
+                    visited[j] = true;
+                    queue.add(j);
+                    level[j] = level[s] + 1;
+                    if (level[j] > largestLevel)
+                        largestLevel = level[j];
                 }
             }
         }
-       return level;
+        level[V] = largestLevel;
+        return level;
     }
 
     /**
-     * The connector between the caller and LBFS algorithm.
-     * Preprocessing for normal LBFS and LBFS plus.
-     *
-     * For normal LBFS, as the order to select vertex is any vertex with largest lexicographical label. The adjacent lists for each vertex do not need to be reordered.
-     * For LBFS plus, for each selection, the vertex to be taken out is the last vertex in lbfsOrdering with largest lexicographical label. So, the adjacent lists for each vertex need to 
-     * be sorted by the lbfsOrdering.
+     * UPDATED
+     * Get the vertices order by degree from small to large
      * 
-     * @param g -> graph
-     * @param lbfsOrdering -> an LBFS ordering
-     * @param num -> an identifier for normal LBFS and LBFS plus (1: normal; 2: plus)
-     * @return
-     */
-    public static int[] lbfs(Graph g, int[] lbfsOrdering, int num) {
-        int[][] adjgraph = g.adjacentGraph;
-        if (num == 1) {
-        	// normal LBFS -> any vertex with lexicographically largest label
-        	// do not need to reorder the adj order
-            return lbfsCore(adjgraph, lbfsOrdering, 0);
-        } else if (num == 2) {
-        	// LBFS+ -> from the vertex with lexicographically largest label, select the last order in the lbfsOrdering list
-            // reorder the adj list according to lbfsOrdering
-            int[][] adj = sortAdjacencyLists(adjgraph, lbfsOrdering);
-            return lbfsCore(adj, lbfsOrdering, lbfsOrdering[lbfsOrdering.length - 1]);
-        }
-        return null;
-    }
-
-    
-    // LBFS DELTA -> vertex with minimum degree and largest lexicographical label
-    /**
-     * a connector between caller and core LBFS algorithm for LBFSdelta
-     * For each selection, the vertex to be taken out is the vertex with minimum degree in largest lexicographical label
-     * So, we first sort the vertex by their degree. Then use the degree order to sort the adjacent lists for each vertex
-     * 
-     * @param g 
-     * @param endVertex 
-     * @return
-     */
-    public static int[] lbfsDelta(Graph g, int endVertex) {
-        
-    	int[][] adjgraph = g.adjacentGraph;
-        
-    	// the permutation is the vertices order of degree from max to min
-        int[] degree = getDegreeOrder(g);
-        
-        // sort adj list by the degree
-        int[][] adj = sortAdjacencyLists(adjgraph, degree);
-
-        return lbfsCore(adj, degree, endVertex);
-    }
-    
-    /**
-     * through this function, we get the vertices order for degree from max to min
      * @param g - graph
-     * @return vertex order
+     * @return vertices sorted by degree
      */
     public static int[] getDegreeOrder(Graph g) {
-    	
-    	int[][] adjgraph = g.adjacentGraph;
-    	int vertexNum = adjgraph.length;
-    	int[] degree = new int[vertexNum]; // store degree of node(index)
-        // sort vertex by degree 
+
+        Vector<Integer>[] adjgraph = g.adjacentGraph;
+        int vertexNum = g.vertexNum;
+
+        // degree for each vertex
+        int[] degree = new int[vertexNum];
         for (int i = 0; i < vertexNum; i++) {
-            degree[i] = adjgraph[i].length;
+            degree[i] = adjgraph[i].size();
         }
-        degree = countSort(degree); // max-min degree sort
-        // for(int i=0;i<degree.length;i++) {
-        // System.out.print(degree[i]);
-        // }
-        return degree;
-    	
+
+        // sort the vertex by degree from small to large
+        int[] vertexOrder = Functions.countSortIndex(degree);
+
+        return vertexOrder;
     }
 
-     /**
-     * A linear-time algorithm to sort the adjacency lists such that vertices in each list follow the same order in {@code permutation}.
+    /**
+     * UPDATED
+     * A linear-time algorithm to sort the adjacency lists such that vertices in
+     * each list follow the same order in {@code permutation}.
      *
-     * For each vertex, create a new adjacency list by copying its neighbors in the order of their appearances in {@code permutation}.
-     *
-     * @param  originalLists
-     *         The given adjacency lists of the graph.
-     * @param  permutation
-     *         A permutation of the vertices [0..n-1] -> [0..n-1].
+     * @param originalLists
+     * @param permutation
      **/
-    public static int[][] sortAdjacencyLists(int[][] originalLists, int[] permutation) {
-        // todo: check adjgraph.length = permutation.lenght.
+    private static Vector<Integer>[] sortAdjacencyLists(Vector<Integer>[] originalLists, int[] permutation) {
 
         int vertexNum = originalLists.length;
-        // count[] record the current position that can be used in the adj list for each vertex
-        int pos[] = new int[vertexNum];
-        // Arrays.fill(count, 0);
-        int[][] newLists = new int[originalLists.length][];
-        for (int i = 0; i < vertexNum; i++)
-            newLists[i] = new int[originalLists[i].length]; // adj[i] = originalLists[i].clone();
-        
-        // choose the vertex A according to the permutation
+        Vector<Integer>[] newlist = new Vector[vertexNum];
+        for(int i=0;i<vertexNum;i++){
+            newlist[i] = new Vector<>();
+        }
+
+        // Similar to the sort adjacent list precedure in intervalOrderingChecking, but
+        // we don't need to renumbering at this time
+        // Also, the checking sorts the array in the reverse order of permutation by the
+        // lemma, while this one is exactly sorting by permutation
+        // for the explanation and correctness, please refer to intervalOrderingChecking
         for (int i = 0; i < vertexNum; i++) {
-        	// get the adjacent vertex B of this vertex A
-            for (int j = 0; j < originalLists[permutation[i]].length; j++) {
-                // System.out.println(adjgraph[degree[i]][j]);
-                int v = originalLists[permutation[i]][j];
-                // put vertex A to the adjacency list of vertex B
-                // update the position that can be used in the adjacency list of vertex B
-                newLists[v][pos[v]++] = permutation[i];
+            int vertex = permutation[i];
+            for (int j : originalLists[vertex]) {
+                newlist[j].add(vertex);
             }
         }
-        // finally  we can get the new adjacent list with the permutation order for each row
-        return newLists;
-    }
-
-    
-    /**
-     * a connector to the core
-     * @param g -> graph
-     * @param permutation -> A permutation of the vertices 
-     * @param endVertex -> the first vertex to be taken out
-     * @return
-     */
-    public static int[] lbfsCore(Graph g, int[] permutation,  int firstoutVertex) {
-        return lbfsCore(g.adjacentGraph, permutation, firstoutVertex);
+        return newlist;
     }
 
     /**
-     * A linear-time algorithm to implement LBFS core algorithm
-     * For each loop, select the first vertices with the lexicographically largest label.
-     * Then, for each unvisited neighbor of the vertex, make the neighbor's lexicographical label larger.
+     * UPDATED
+     * Input: A connected graph G.
+     * Output: Whether G is a unit interval graph.
      * 
-     * implementation:
-     * A linked linked list{@code lexicographical_linkedlist} for the precedence of the lexicographical label
-     * For each element in {@code lexicographical_linkedlist}, it is a linked list of nodes at certain lexicographical label.
-     * In linked linked list {@code lexicographical_linkedlist}, from beginning to the end, the lexicographical label of linked list is decrease.
+     * Figure 6: The three-sweep recognition algorithm for unit interval graphs
      * 
-     * @param adj
-     * @param permutation
-     * @param firstoutVertex -> the first vertex that should be taken out
+     * @param g
+     * @return whether or not graph g is a UIG
+     */
+    public static boolean threeSweepUIG(Graph g) {
+        int[] t = LBFS(g);
+        int[] sigma = LBFSplus(g, t);
+        int[] sigmaPLUS = LBFSplus(g, sigma);
+        return intervalOrderingChecking(g, sigmaPLUS);
+    }
+
+    /**
+     * UPDATED
+     * Input: A connected graph G.
+     * Output: Whether G is a unit interval graph.
+     * 
+     * Figure 7: A two-sweep recognition algorithm for unit interval graphs.
+     * 
+     * @param g
+     * @return whether or not graph g is a UIG
+     */
+    public static boolean twoSweepUIG(Graph g) {
+        int u = findendVertex(g);
+        int[] sigma = LBFSdelta(g, u);
+        return intervalOrderingChecking(g, sigma);
+    }
+
+    private static int[] LBFS(Graph g) {
+        int[] permutation = IntStream.range(0, g.vertexNum).toArray();
+        return basicLBFS(g.adjacentGraph, permutation, 0, false, false);
+    }
+
+    private static int[] LBFSplus(Graph g, int[] permutation) {
+        return basicLBFS(g.adjacentGraph, permutation, -1, true, false);
+    }
+
+    private static int[] LBFSdelta(Graph g, int out) {
+        // this permutation is sorted vertices by degree from small to large
+        int[] permutation = getDegreeOrder(g);
+        return basicLBFS(g.adjacentGraph, permutation, out, false, true);
+    }
+
+    /**
+     * UPDATED
+     * A linear-time algorithm to implement Figure 3: the procedure LBFS
+     * Idea: using doubly linked linked lists to simulate lexicographically
+     * labelling
+     * 
+     * Data structure:
+     * The list {@code lexicographical_linkedlist} is a linked list.
+     * The nodes of this linked list are also linked list.
+     * Each small linked list contains disjoint vertices, and each list represents a
+     * unique lexicographical precedence of the vertices contained.
+     * By implementation, from head to tail, the lexicographical precedence for each
+     * small linked list decreases.
+     * 
+     * Correctness:
+     * Since the goal of label editing is to find the precedence of vertices,
+     * We do not need to explicitly record each label, instead the precedence
+     * matters.
+     * Through this data structure, we convert complicated label operation to linked
+     * list deletion and insertion, which could be implemented linearly.
+     * 
+     * LBFS variants:
+     * Since LBFS plus and LBFS sigma are similar to the basic LBFS, we add some
+     * parameters to integrate them together
+     * 
+     * @param adj         - adjacency list for graph
+     * @param permutation - [0,1,...,n] for LBFS
+     * @param out         - vertex to take out at the first step, 0 for LBFS
+     * @param plus        - whether this is LBFS plus algorithm
      * @return
      */
-    public static int[] lbfsCore(int[][] adj, int[] permutation,int firstoutVertex) {
-        int vertexNum = adj.length;
+    private static int[] basicLBFS(Vector<Integer>[] adjgraph, int[] permutation, int out, boolean plus,
+            boolean delta) {
 
-        // LBFS -> to be returned.
-        // the LBFS list : index -> vertex number; element -> the order of the vertex to be taken out (from 0)
-        int[] LBFS = new int[vertexNum];
-        
-        // initialization: all nodes haven't been taken out of the linked list.
-        Arrays.fill(LBFS, -1);
-        
+        int vertexNum = permutation.length;
+
+        // For LBFSplus and LBFSdelta, in step 2.2, when choosing the vertex to be taken
+        // out, a certain condition related to the permutation should be satisfied.
+        // To enable a O(1) implementation to pick the vertex, we sort the adjacency
+        // list by the permutation.
+        // Then, since we scan the list of neighbors from left to right in the vector,
+        // then order we scan is the exactly the permutation.
+        // In this case every small linked list is guaranted to be sorted by
+        // permutation, we don't need extra modify in the procedure.
+        Vector<Integer>[] adj = new Vector[vertexNum];
+        adj = adjgraph;
+        if (plus == true || delta == true) {
+            adj = sortAdjacencyLists(adjgraph, permutation);
+        }
+
+        // sigma -> LBFS ordering to be returned.
+        // index -> vertex number;
+        // element -> the order of the vertex to be taken out (from 0)
+        int[] sigma = new int[vertexNum];
+
+        // initialization
+        Arrays.fill(sigma, -1);
+
+        // For a linear implementation, we store the current linked list for each node
+        // to implement a O(1) search for which list the node is in
+        Node[] curlinkedlistnodes = new Node[vertexNum];
+        // We also store each node in a list for O(1) searching
+        Node[] nodes = new Node[vertexNum]; // nodelist for previous
+
         // the initial linked list in the linked linked list
-        DList<Node> initial_linkedlist = new DList<Node>();
-        
-        // nodelist -> a list to store the node by their original index
-        // find a node in linked list in O(1)
-        Node[] nodelist = new Node[vertexNum];
+        // it should contains all vertices since the labels for all vertices are empty
+        // initially
+        // time represents when the linked list is created
+        // it is created before the core LBFS, so the time is set to be -1
+        DoublyLinkedList initial_linkedlist = new DoublyLinkedList();
+        initial_linkedlist.time = -1;
 
-        // a linked list (represents lexicographically label) with element of linked list (vertexes in each label)
-        // through the implementation, the linked list in the lexicographical_linked list will be placed in the order of the lexicographical label
-        // from head to tail, the lexicographical label will decrease
-        // so the first element (linked list) in lexicographical_ linkedlist always has the largest label
-        DList<DList<Node>> lexicographical_linkedlist = new DList<DList<Node>>();
-        
-        // initialization: in the linked linked list, there is only one element (except head & tail)
-        // including all the vertex
-        // insertFirst return the node of the linked linked list corresponding to the inserted lined list
-        Node initial_node = lexicographical_linkedlist.insertFirst(initial_linkedlist);
-        
-        // degree of the head of the element (linked list) in linked linked list represents when this linked list is created.
-        // initialization -> -1; 
-        initial_node.degree = -1;
-        
-//        System.out.println("permutation"+Arrays.toString(permutation));
-        
-        // initialization: insert each node to the initial_lined list
+        // a big linked list of serveral small linked list
+        DoublyLinkedList lexicographical_linkedlist = new DoublyLinkedList();
+        lexicographical_linkedlist.time = -1;
+
+        // initially: there is only initial_linkedlist in the big linked list
+        Node initial_node = new Node<DoublyLinkedList>(initial_linkedlist);
+        lexicographical_linkedlist.insertAtBeginning(initial_node);
+
+        // insert each node to the initial_linkedlist
+        // since the labels for all vertices are empty initially
+        // permutation is a kind of precedence for the node,
+        // used for step2.2 how to pick the vertex from set S
         for (int i = 0; i < vertexNum; i++) {
-        	// insertion by the permutation
-            Node node = new Node(permutation[i]);
-            node.degree = adj[permutation[i]].length;
-            
-            // curlistNode is the current linked list that the node belongs to
-            // to implement O(1) when insertion new linked list with larger lexicographical label
-            node.curlistNode = initial_node;
-            initial_linkedlist.insertFirstNode(node);
-            
-            // store the node according to the vertex number in nodelist
-            nodelist[permutation[i]] = node;
+            // insertion by the permutation
+            // permutation[number] = vertex
+            int vertex = permutation[i];
+            Node node = new Node(vertex);
+            // store the current linked list for the node
+            curlinkedlistnodes[vertex] = initial_node;
+            // store the node to the corresponding vertex
+            nodes[vertex] = node;
+            // insert at end to make sure the initial linked list is sorted by permutation
+            initial_linkedlist.insertAtEnd(node);
         }
-        
-//        System.out.println(firstoutVertex);
-//        initial_linkedlist.printToString();
 
-        // select the vertex to be taken out 
-        // and insert new linked list with larger lexicographic label
+        // LBFS core:
+        // Select the vertex to be taken out, move it from the linked list
+        // Move all its neighbors in the lists to a higher precedence (adding to get a
+        // larger lexicographic label)
         for (int i = 0; i < vertexNum; i++) {
-            // unvisited vertices with the lexicographically largest label
-            Node<DList<Node>> superNode = lexicographical_linkedlist.head.next;
-            Node outNode;// node gonna be taken out
-            // As we have sort the adjlist by permutation, 
-            // the first element in the lexicographical label is the out node
-            if (i == 0) {
-                outNode = nodelist[firstoutVertex];
-//                System.out.println((int)outNode.element);
-            } else {
-            	while(superNode.element.isEmpty()) {
-            		superNode = superNode.next;
-            	}
-//            	superNode.element.printToString();
-                outNode = superNode.element.head.next;
-            }
-            // System.out.println(outNode.element);
-            // System.out.println(i);
-            removeNode(outNode);
 
-            // curlistNode refer to the node (in linked linked list) of the this lexicographcial label
-            // if the linked list is empty
-            if (((DList<Node>) outNode.curlistNode.element).isEmpty()) {
-                removeNode(outNode.curlistNode);
-                // System.out.println('a');
+            // S ← unvisited vertices with the lexicographically largest label;
+            DoublyLinkedList superNode = (DoublyLinkedList) lexicographical_linkedlist.head.element;
+
+            Node outNode;// node gonna be taken out
+
+            // 2.2. v ← the last vertex of σ|S;
+            // for each small linked list, by implementation it is sorted by permutation
+            if (plus == true) {
+                outNode = superNode.tail;
+            } else {
+                // take out the node:
+                // 1st time: arbitrary
+                // other time: largest permutation in largest lexicographical label
+                // Since when we insert the initial nodes by permutation and we sort the adj
+                // list by permutation, the first element in the largest-label linked list is
+                // the out node.
+
+                // The procedures for LBFSdelta and orginal LBFS are the same in implementation.
+                // The difference is that for LBFS, we define the permutation using array
+                // 0...n-1 to simplify.
+                // For LBFS delta, the permutation is by the degree of the vertices from small
+                // to large
+
+                if (i == 0) {
+                    outNode = nodes[out];
+                } else {
+                    outNode = superNode.head;
+                }
             }
+
+            int outVertex = (int) outNode.element;
+            // get the list where the node is in
+            Node currentListNode = curlinkedlistnodes[outVertex];
+            DoublyLinkedList currentList = (DoublyLinkedList) currentListNode.element;
+            currentList.delete(outNode);
+
+            // if current small list is empty, delete it from the big linked list
+            if (currentList.isEmpty())
+                lexicographical_linkedlist.delete(currentListNode);
 
             // set the output list
-            LBFS[(int) outNode.element] = i;
+            sigma[outVertex] = i;
 
-            // take the out node's adjacent nodes and assign them with larger lexicographical label
-            // implementation: remove the nodes from each current linked list, 
-            // create a new linked list and insert just before their current linked list, so the new linked list has a larger lexicographical label
-            // insert the nodes into the new linked list
-            for (int j = 0; j < adj[(int) outNode.element].length; j++) {
-            	
-            	// if the adjacent nodes has already been taken out, go on
-                if (LBFS[adj[(int) outNode.element][j]] != -1) {
+            // Idea: take the outnode's adjacent nodes and assign them with larger
+            // lexicographical label
+            // implementation:
+            // Find the neighbors by the adj list (sorted by permutation)
+            // For each neighbor
+            // - Locate the current list for it, and remove the node from the list
+            // - Create a new linked list and insert just before the previous list
+            // containing this neighbor
+            // (the new list represents a higher precedence, corresponding to a larger
+            // label)
+            // Insert the node into the end of the new list
+
+            for (int j : adj[outVertex]) {
+
+                // if the adjacent nodes has already been taken out, continue
+                if (sigma[j] != -1)
                     continue;
-                }
+
+                Node node = nodes[j];
+                Node currentlistNode = curlinkedlistnodes[j];
+                DoublyLinkedList currList = (DoublyLinkedList) currentlistNode.element;
 
                 // remove the node from current list
-                Node temp = removeNode(nodelist[adj[(int) outNode.element][j]]);
-//                System.out.println("superlist"+temp.element);
-                // if the new linked list for a larger lexicographical label hasn't been created
-                // that is the previous linked list is not created in this selection(i)
-                if (temp.curlistNode.previous.degree != i) {
-                    DList<Node> newlist = new DList<Node>();
-                    // create a new linked list, and insert before the current one
-                    Node newlistNode = lexicographical_linkedlist.insertBefore(temp.curlistNode, newlist);
-                    newlistNode.degree = i;	// mark the new linked list is created in the selection (i)
-//                    newlistNode.predegree = temp.curlistNode.degree;
-                    newlist.insertFirstNode(temp); // insert the node into new list
-                    
-                    // check whether need to remove the old linked list (empty)
-//                    if (((DList<Node>) temp.curlistNode.element).isEmpty()) {
-//                        removeNode(temp.curlistNode);
-//                    	temp.curlistNode.degree = -2;
-//                    }
-                    
-                    // change the node's curlistNode to the new linked list (node element in the large linked linked list)
-                    temp.curlistNode = newlistNode;
-                    // System.out.println(temp.curlistNode);
-                    // System.out.println('1');
-                    
-                 // if the new larger lexicographical list for this selection has already been created
+                currList.delete(node);
+
+                // if it is empty, do not delete it immediately, since we need the old list to
+                // do the insertion for new list
+                // if (currList.isEmpty()) lexicographical_linkedlist.delete(currentlistNode);
+
+                // we need to check whether the new linked list for this current list has been
+                // created by checking time field of the last linked list
+                // the checking is needed because there could be two neighbors in the same
+                // linked list originally
+                boolean created = false;
+                if (currentlistNode == lexicographical_linkedlist.head) {
+                    created = false;
                 } else {
-                    // System.out.println(temp.curlistNode.previous);
-                	// simply add the node into the previous linked list (larger lex)
-                    ((DList<Node>) temp.curlistNode.previous.element).insertFirstNode(temp);
-                    // change the curlistNode 
-                    temp.curlistNode = temp.curlistNode.previous;
-                    // check whether need to delete the odd linked list (if empty)
-//                    if (((DList<Node>) temp.curlistNode.next.element).isEmpty()) {
-//                        removeNode(temp.curlistNode.next);
-//                    }
-                    // System.out.println(temp.curlistNode.previous);
-
-                    // System.out.println(temp.curlistNode);
-                    // System.out.println('2');
+                    Node previousNode = currentlistNode.previous;
+                    DoublyLinkedList previousList = (DoublyLinkedList) previousNode.element;
+                    int time = previousList.time;
+                    if (time == i) {
+                        created = true;
+                    } else {
+                        created = false;
+                    }
                 }
-                // System.out.println(temp.element);
+
+                Node newNode;
+                DoublyLinkedList newlist;
+                if (created == false) {
+
+                    // create a new linked list
+                    newlist = new DoublyLinkedList();
+                    // record the time
+                    newlist.time = i;
+                    newNode = new Node<DoublyLinkedList>(newlist);
+
+                    // insert just before the previous one
+                    lexicographical_linkedlist.insertBefore(currentlistNode, newNode);
+
+                    // insert the node into new list
+                    newlist.insertAtEnd(node);
+
+                    // change the node's curlistNode to the new linked list node
+                    curlinkedlistnodes[j] = newNode;
+
+                } else {
+
+                    // the new list has already been created
+                    newNode = currentlistNode.previous;
+                    newlist = (DoublyLinkedList) newNode.element;
+
+                    // insert the node into new list
+                    newlist.insertAtEnd(node);
+
+                    // change the curlistNode
+                    curlinkedlistnodes[j] = newNode;
+
+                }
+                // check whether need to remove the old linked list (empty)
+                if (currList.isEmpty())
+                    lexicographical_linkedlist.delete(currentlistNode);
 
             }
-       
+
         }
 
-        return LBFS;
+        return sigma;
     }
 
+
+
     /**
-     * This method does not belong here.
-     */
-    // 
-    /**
-     * A sorting algorithm in O(n) to sort the degree
+     * UPDATED
+     * A linear-time algorithm to check whether the vertex order {@code vertexOrder}
+     * is an
+     * umbrella ordering for UIG (interval ordering for IG)
+     * LINE 160: Given an ordering σ of V(G), we can verify whether σ is an interval
+     * ordering in linear time.
      * 
-     * Record the number for each degree and the start position in the sorted list
-     * 
-     * @param degree
-     * @return
-     */
-    static int[] countSort(int[] degree) {
-
-    	
-        int n = degree.length;
-        int[] degreeOrder = new int[n];
-        int[] count = new int[n]; // degree:0 - n-1
-        // for each degree, how many vertexes are there
-        for (int i = 0; i < n; i++) {
-            count[degree[i]]++;
-        }
-        // for each degree, what is the current position that can be used
-        int[] cur = new int[n];
-        // initialization: the begin position that can be used for each degree
-        for (int i = 0; i < cur.length; i++) {
-            if (i == 0)
-                cur[i] = 0;
-            else {
-            	// beginning position for this degree is the beginning position for previous degree and the number of vertex for previous degree
-                cur[i] = cur[i - 1] + count[i - 1];
-            }
-        }
-        // put degree into the list
-        int[] sortedDegree = new int[n];
-        for (int i = 0; i < n; i++) {
-            sortedDegree[cur[degree[i]]++] = i;
-        }
-        // reverse the list
-        for (int i = n - 1; i >= 0; i--) {
-            degreeOrder[i] = sortedDegree[n - 1 - i];
-        }
-
-        return degreeOrder;
-    }
-
-    /*
-     * public-> private.
-     */
-    /**
-     * remove a node in the doubly linked list
-     * @param node
-     * @return
-     */
-    private static Node removeNode(Node node) {
-        Node temp = node.previous;
-        node.previous.next = node.next;
-        node.next.previous = temp;
-        node.previous = null;
-        node.next = null;
-        // if (node.head.next.next==null) {
-        // delete
-        // }
-        return node;
-    }
-
-    /*
-     * LBFS -> sigma (this method is supposed to check whether an ordering is an umbrella ordering; using LBFS is misleading.)
-     */
-    /**
-     * A linear-time algorithm to check whether the list {@code sigma} is an umbrella ordering
-     * 
-     * First, renumber the vertices an get the {@code vertexOrder}
-     * Second, sort the adjacency list for each vertex in the decreasing order. 
-     * Use an array of linked list for each vertex. Each linked list is the adjacency list of the vertex.
-     * Traverse the vertex by {@code vertexOrder}, insert the vertex into its neighbor's adjacency list.
-     * Check whether the ith linked list starts from [the first element, the second element, ... , i+1] 
+     * Implementation:
+     * Renumber the vertices such that σ(vi) = i.
+     * Sort the adjacency list for each vertex in the decreasing order.
+     * Check for all i = 1, . . . ,n − 1, the ith list starts from [f(i), f(i) − 1,
+     * . . . ,i + 1], where f(i) is the first number in the list
      * 
      * @param g
      * @param sigma
      * @return
      */
-    public static boolean intervalOrdering(Graph g, int[] vertexOrder) {
-        int[][] adj = g.adjacentGraph;
-        
-        
-//        for (int i=0;i<adj.length;i++) {
-//        	System.out.print(i+":");
-//        	for(int j=0;j<adj[i].length;j++) {
-//        		System.out.print(adj[i][j]+",");
-//        	}System.out.println();
-//        }
-        
-        
-        int[] sigma = new int[vertexOrder.length];
-        for(int i=0;i<sigma.length;i++) {
-        	sigma[vertexOrder[i]] = i;
+    public static boolean intervalOrderingChecking(Graph g, int[] vertexOrder) {
+
+        int vertexNum = vertexOrder.length;
+        Vector<Integer> adj[] = g.adjacentGraph;
+
+        // renumber vertices:
+        // index of label -> orignal vertex number
+        // element of label -> new vertex number
+        int[] label = new int[vertexNum];
+        for (int i = 0; i < vertexNum; i++) {
+            label[vertexOrder[i]] = i;
         }
-        
-		
-        DList[] lists = new DList[vertexOrder.length];
-        // sort the adjacent list within each vertex in decreasing order by the vertexOrder
+
+        // A linear implementation of renumbering and sorting at the same time:
+        // Create a new empty adjacancy list
+        // We scan the vertex from right to left in vertexOrder, so the label of vertex
+        // is decreasing while scanning.
+        // When scanning a node, we add it to adjacency list for its neighbors
+        // Since Vector add() Method in Java appends the specified element to the end of
+        // this vector.
+        // So, after scanning all vertices and adding to the corresponding adjacency
+        // list,
+        // we have already sorted the adjacency list.
+
+        Vector<Integer>[] newadj = new Vector[vertexNum];
+        for(int i=0;i<vertexNum;i++){
+            newadj[i] = new Vector<>();
+        }
+
+        // sort the adjacent list within each vertex in decreasing order by the
+        // vertexOrder
         // and store the adjacent list for each vertex in the lists
         // lists is a list for DList, by vertexOrder
-        for(int i=0;i<vertexOrder.length;i++) {
-        	int vertex = vertexOrder[i];
-        	int adjlength = adj[vertex].length;
-        	for(int j=0;j<adjlength;j++) {
-        		if (lists[sigma[adj[vertex][j]]] == null) {
-                    lists[sigma[adj[vertex][j]]] = new DList();
-                }
-        		Node node = new Node(i);
-        		lists[sigma[adj[vertex][j]]].insertFirstNode(node);
-        	}
-        }
-        
-
-
-        // check whether the k th list starts from tthe first number to i+1. 
-        // check whether the number larger than k is exactly the difference between the first element and k
-        for (int k = 0; k < lists.length - 1; k++) {
-            Node nodee = lists[k].head.next;
-            int begin = (int) nodee.element;
-            int count = 0;
-//            System.out.println(k);
-//            System.out.print(k+": ");
-            while ((int) nodee.element > k) {
-                count++;
-//                System.out.print((int)nodee.element);
-                nodee = nodee.next;
-                
+        for (int i = vertexNum - 1; i >= 0; i--) {
+            int vertex = vertexOrder[i];
+            for (int j : adj[vertex]) {
+                newadj[label[j]].add(i);
             }
-//            System.out.println();
-//            System.out.println(k+":");
-//            System.out.println(begin-k);
-//            System.out.println(count);
-            if ((begin - k) != count) {
-//            	System.out.println(begin-k);
-//            	System.out.println(count);
-//            	System.out.println(false);
-            	return false;
-            } 
         }
-//        System.out.println(true);
+
+        // check whether the ith list starts from the first number to i+1.
+        // convert the checking to whether the number at position (first - (i+1)) is
+        // exactly i+1
+        // since Vector stores an array of the element it store, so the
+        // Vector.get(index) is implemented in O(1) by default
+        for (int i = 0; i < vertexNum; i++) {
+            Vector<Integer> list = newadj[i];
+            if (list.isEmpty())
+                continue;
+            int first = list.get(0);
+            if (first <= i + 1)
+                continue;
+            if (first - (i + 1)>=newadj[i].size()) return false;
+            if (list.get(first - (i + 1)) != i + 1)
+                return false;
+        }
+        // System.out.println(true);
         return true;
     }
 
@@ -501,18 +529,18 @@ public class GraphSearch {
      * Check whether an integer array is a correct permutation of [1..n].
      *
      * @param sigma
-     *     an integer array
+     *              an integer array
      * @return true if sigma is a permutation
      **/
     public static boolean isPermutation(int[] sigma) {
         return false;
     }
-    
+
     /**
      * The algorithm maximum cardinality search.
      *
-     * @param g 
-     *     the input graph
+     * @param g
+     *          the input graph
      * @return an mcs ordering of g.
      **/
     public static int[] mcs(Graph g) {
