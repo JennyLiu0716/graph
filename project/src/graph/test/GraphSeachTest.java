@@ -33,8 +33,8 @@ public class GraphSeachTest {
         int rejected = 0;
         Vector<Integer> rejectedgraph = new Vector<>();
         init();
-        // 6, 13, 14 30 35 36 51 63 84 97
-        for(int i= 20; i<100;i++){
+        // 7 8 13 56 73 83 84 90
+        for(int i= 0; i<100;i++){
             if (GraphSearch.threeSweepUIG(this.graphs[i])){
                 passed ++;
             }else {
@@ -56,7 +56,7 @@ public class GraphSeachTest {
         Vector<Integer> rejectedgraph = new Vector<>();
 
         init();
-        for(int i= 20; i<100;i++){
+        for(int i= 0; i<100;i++){
             if (GraphSearch.twoSweepUIG(this.graphs[i])){
                 passed ++;
             }else {

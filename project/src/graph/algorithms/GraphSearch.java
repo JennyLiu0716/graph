@@ -258,10 +258,12 @@ public class GraphSearch {
         // In this case every small linked list is guaranted to be sorted by
         // permutation, we don't need extra modify in the procedure.
         Vector<Integer>[] adj = new Vector[vertexNum];
-        adj = adjgraph;
-        if (plus == true || delta == true) {
-            adj = sortAdjacencyLists(adjgraph, permutation);
-        }
+        // adj = adjgraph;
+        // if (plus == true || delta == true) {
+        //     adj = sortAdjacencyLists(adjgraph, permutation);
+        // }
+        // we also sort the adj list for normal LBFS, because we also give a permutation by default from 1 to n
+        adj = sortAdjacencyLists(adjgraph, permutation);
 
         // sigma -> LBFS ordering to be returned.
         // index -> vertex number;
