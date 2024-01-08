@@ -13,7 +13,7 @@ public class GraphGeneratorTest {
     @Test
     public void generateTest() throws FileNotFoundException{
         String path = ".\\project\\graphs\\";
-        GraphGenerator.generator(10, true, path, true, 10, true);
+        GraphGenerator.generator(20, true, path, true, 100, true);
     }
     
     @Test

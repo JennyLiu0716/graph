@@ -72,4 +72,22 @@ public class Functions {
 
         return array;
     }
+
+    /**
+     * a function to transfer the element with the index 
+     * helper function in LBFS sigma representation, to convert it from a precedence array to vertex array 
+     * 
+     * @param array
+     * @return
+     */
+    public static int[] transferIE(int[] array){
+        int n = array.length;
+        int[] newlist = new int[n];
+
+        for(int i=0; i<n;i++){
+            newlist[array[i]] = i;
+        }
+
+        return newlist;
+    }
 }

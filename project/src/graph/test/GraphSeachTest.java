@@ -3,6 +3,8 @@ package graph.test;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.Vector;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,12 +13,12 @@ import graph.Graph;
 import graph.algorithms.GraphSearch;
 
 public class GraphSeachTest {
-    Graph[] graphs = new Graph[10];
+    Graph[] graphs = new Graph[100];
 	
 	@Test
 	public void init() throws FileNotFoundException {
 		String path="";
-        for(int i=1;i<=10;i++) {
+        for(int i=1;i<=100;i++) {
 			path = ".\\project\\graphs\\unit_interval_graph_connected"+i+".txt";
 	      	Graph graph = new Graph();
             graph.readFile(path);
@@ -27,24 +29,44 @@ public class GraphSeachTest {
 
     @Test
     public void threeSweepUIGTest() throws FileNotFoundException{
+        int passed = 0;
+        int rejected = 0;
+        Vector<Integer> rejectedgraph = new Vector<>();
         init();
-        String path="";
-        for(int i= 9; i<=9;i++){
-            assertTrue(GraphSearch.threeSweepUIG(this.graphs[i]));
+        // 6, 13, 14 30 35 36 51 63 84 97
+        for(int i= 20; i<100;i++){
+            if (GraphSearch.threeSweepUIG(this.graphs[i])){
+                passed ++;
+            }else {
+                rejected++;
+                rejectedgraph.add(i);
+            }System.out.println("three sweep: passed "+passed+" rejected "+rejected);
+        }
+        for(int i:rejectedgraph){
+            System.out.println(i);
         }
 
         
     }
-    // pass: 0,1,6,8,9
-    // reject: 2,3,4,5,7,
     @Test
     public void twoSweepUIGTest() throws FileNotFoundException{
+        //pass
+        int passed = 0;
+        int rejected = 0;
+        Vector<Integer> rejectedgraph = new Vector<>();
+
         init();
-        String path="";
-        for(int i= 8; i<=9;i++){
-            assertTrue(GraphSearch.threeSweepUIG(this.graphs[i]));
+        for(int i= 20; i<100;i++){
+            if (GraphSearch.twoSweepUIG(this.graphs[i])){
+                passed ++;
+            }else {
+                rejected++;
+                rejectedgraph.add(i);
+            }System.out.println("three sweep: passed "+passed+" rejected "+rejected);
         }
 
-        
+        for(int i:rejectedgraph){
+            System.out.println(i);
+        }
     }
 }

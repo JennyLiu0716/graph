@@ -74,6 +74,7 @@ public class Graph {
         }
 
         // ignore the vertex colors
+        if (this.edgeNum==0) return;
         curline = sc.nextLine();
         lineStrings = curline.split(" ");
         while (lineStrings[0].equals("n")) {

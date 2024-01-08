@@ -173,9 +173,12 @@ public class GraphSearch {
      */
     public static boolean threeSweepUIG(Graph g) {
         int[] t = LBFS(g);
-        int[] sigma = LBFSplus(g, t);
-        int[] sigmaPLUS = LBFSplus(g, sigma);
-        return intervalOrderingChecking(g, sigmaPLUS);
+        int[] t_new = Functions.transferIE(t);
+        int[] sigma = LBFSplus(g, t_new);
+        int[] sigma_new = Functions.transferIE(sigma);
+        int[] sigmaPLUS = LBFSplus(g, sigma_new);
+        int[] sigmaPLUS_new = Functions.transferIE(sigmaPLUS);
+        return intervalOrderingChecking(g, sigmaPLUS_new);
     }
 
     /**
@@ -191,7 +194,8 @@ public class GraphSearch {
     public static boolean twoSweepUIG(Graph g) {
         int u = findendVertex(g);
         int[] sigma = LBFSdelta(g, u);
-        return intervalOrderingChecking(g, sigma);
+        int[] sigma_new = Functions.transferIE(sigma);
+        return intervalOrderingChecking(g, sigma_new);
     }
 
     private static int[] LBFS(Graph g) {
@@ -486,8 +490,7 @@ public class GraphSearch {
         // Since Vector add() Method in Java appends the specified element to the end of
         // this vector.
         // So, after scanning all vertices and adding to the corresponding adjacency
-        // list,
-        // we have already sorted the adjacency list.
+        // list, we have already sorted the adjacency list.
 
         Vector<Integer>[] newadj = new Vector[vertexNum];
         for(int i=0;i<vertexNum;i++){
@@ -517,9 +520,14 @@ public class GraphSearch {
             int first = list.get(0);
             if (first <= i + 1)
                 continue;
-            if (first - (i + 1)>=newadj[i].size()) return false;
-            if (list.get(first - (i + 1)) != i + 1)
+            //error
+            if (first - (i + 1)>newadj[i].size()-1) {
                 return false;
+            }
+            if (list.get(first - (i + 1)) != i + 1){
+                return false;
+            }
+
         }
         // System.out.println(true);
         return true;
