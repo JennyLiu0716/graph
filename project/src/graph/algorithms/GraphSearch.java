@@ -143,7 +143,7 @@ public class GraphSearch {
 
         int vertexNum = originalLists.length;
         Vector<Integer>[] newlist = new Vector[vertexNum];
-        for(int i=0;i<vertexNum;i++){
+        for (int i = 0; i < vertexNum; i++) {
             newlist[i] = new Vector<>();
         }
 
@@ -174,10 +174,25 @@ public class GraphSearch {
     public static boolean threeSweepUIG(Graph g) {
         int[] t = LBFS(g);
         int[] t_new = Functions.transferIE(t);
+
+        // testing graph14.txt vertex order is incorrect
+        // System.out.println("vertexOrder1");
+        // System.out.println(Arrays.toString(t_new));
+
         int[] sigma = LBFSplus(g, t_new);
         int[] sigma_new = Functions.transferIE(sigma);
+
+        // testing graph14.txt vertex order is incorrect
+        // System.out.println("vertexOrder2");
+        // System.out.println(Arrays.toString(sigma_new));
+
         int[] sigmaPLUS = LBFSplus(g, sigma_new);
         int[] sigmaPLUS_new = Functions.transferIE(sigmaPLUS);
+
+        // testing graph14.txt vertex order is incorrect
+        // System.out.println("vertexOrder1");
+        // System.out.println(Arrays.toString(sigmaPLUS_new));
+
         return intervalOrderingChecking(g, sigmaPLUS_new);
     }
 
@@ -258,12 +273,17 @@ public class GraphSearch {
         // In this case every small linked list is guaranted to be sorted by
         // permutation, we don't need extra modify in the procedure.
         Vector<Integer>[] adj = new Vector[vertexNum];
-        // adj = adjgraph;
-        // if (plus == true || delta == true) {
-        //     adj = sortAdjacencyLists(adjgraph, permutation);
-        // }
-        // we also sort the adj list for normal LBFS, because we also give a permutation by default from 1 to n
+
+        // we also sort the adj list for normal LBFS, because we also give a permutation
+        // by default from 1 to n
         adj = sortAdjacencyLists(adjgraph, permutation);
+
+        // correct adj
+        // for(int i=0;i<adj.length;i++){
+        // for(int j:adj[i]){
+        // System.out.print(j+",");
+        // }System.out.println();
+        // }
 
         // sigma -> LBFS ordering to be returned.
         // index -> vertex number;
@@ -312,11 +332,16 @@ public class GraphSearch {
             initial_linkedlist.insertAtEnd(node);
         }
 
+        // initial_node correct
+        // ((DoublyLinkedList) initial_node.element).display();
+
         // LBFS core:
         // Select the vertex to be taken out, move it from the linked list
         // Move all its neighbors in the lists to a higher precedence (adding to get a
         // larger lexicographic label)
         for (int i = 0; i < vertexNum; i++) {
+
+            // lexicographical_linkedlist.display();
 
             // S ← unvisited vertices with the lexicographically largest label;
             DoublyLinkedList superNode = (DoublyLinkedList) lexicographical_linkedlist.head.element;
@@ -373,6 +398,8 @@ public class GraphSearch {
             // label)
             // Insert the node into the end of the new list
 
+            Vector<Node> emptyLists = new Vector<>();
+
             for (int j : adj[outVertex]) {
 
                 // if the adjacent nodes has already been taken out, continue
@@ -387,8 +414,9 @@ public class GraphSearch {
                 currList.delete(node);
 
                 // if it is empty, do not delete it immediately, since we need the old list to
-                // do the insertion for new list
-                // if (currList.isEmpty()) lexicographical_linkedlist.delete(currentlistNode);
+                // do the insertion for new list. we record it
+                if (currList.isEmpty())
+                    emptyLists.add(currentlistNode);
 
                 // we need to check whether the new linked list for this current list has been
                 // created by checking time field of the last linked list
@@ -441,17 +469,20 @@ public class GraphSearch {
 
                 }
                 // check whether need to remove the old linked list (empty)
-                if (currList.isEmpty())
-                    lexicographical_linkedlist.delete(currentlistNode);
-
+                // don't delete the list here, since we need the old empty list to seperate new
+                // list with the same time
+                // to avoid unexpected merging of new list seperated by an empty list
+                // if (currList.isEmpty())
+                // lexicographical_linkedlist.delete(currentlistNode);
             }
+            // delete here
+            for (Node node : emptyLists)
+                lexicographical_linkedlist.delete(node);
 
         }
 
         return sigma;
     }
-
-
 
     /**
      * UPDATED
@@ -495,7 +526,7 @@ public class GraphSearch {
         // list, we have already sorted the adjacency list.
 
         Vector<Integer>[] newadj = new Vector[vertexNum];
-        for(int i=0;i<vertexNum;i++){
+        for (int i = 0; i < vertexNum; i++) {
             newadj[i] = new Vector<>();
         }
 
@@ -522,11 +553,10 @@ public class GraphSearch {
             int first = list.get(0);
             if (first <= i + 1)
                 continue;
-            //error
-            if (first - (i + 1)>newadj[i].size()-1) {
+            if (first - (i + 1) > newadj[i].size() - 1) {
                 return false;
             }
-            if (list.get(first - (i + 1)) != i + 1){
+            if (list.get(first - (i + 1)) != i + 1) {
                 return false;
             }
 

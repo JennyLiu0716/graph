@@ -122,9 +122,8 @@ public class DoublyLinkedList {
 		temp.previous = null;
 		size--;
 	}
-
-	static void display(Node head) {
-		Node temp = head;
+	public void display() {
+		Node temp = this.head;
 		while (temp != null) {
 			System.out.print(temp.element.toString() + " --> ");
 			temp = temp.next;
