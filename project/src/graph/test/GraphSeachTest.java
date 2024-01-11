@@ -19,7 +19,21 @@ public class GraphSeachTest {
     public void connectedUIGinit() throws FileNotFoundException {
         String path = "";
         for (int i = 1; i <= 100; i++) {
+            // System.out.println(i);
             path = ".\\project\\graphs\\unit_interval_graph_connected" + i + ".txt";
+            Graph graph = new Graph();
+            graph.readFile(path);
+            this.graphs[i - 1] = graph;
+        }
+
+    }
+
+    @Test
+    public void disconnectedUIGinit() throws FileNotFoundException {
+        String path = "";
+        for (int i = 1; i <= 100; i++) {
+            // System.out.println(i);
+            path = ".\\project\\graphs\\unit_interval_graph_disconnected" + i + ".txt";
             Graph graph = new Graph();
             graph.readFile(path);
             this.graphs[i - 1] = graph;
@@ -45,6 +59,7 @@ public class GraphSeachTest {
         for (int i : rejectedgraph) {
             System.out.println(i);
         }
+        assertTrue(passed == 100);
 
     }
 
@@ -69,5 +84,52 @@ public class GraphSeachTest {
         for (int i : rejectedgraph) {
             System.out.println(i);
         }
+        assertTrue(passed == 100);
+    }
+
+    @Test
+    public void threeSweepDisconnectedUIGTest() throws FileNotFoundException {
+        int passed = 0;
+        int rejected = 0;
+        LinkedList<Integer> rejectedgraph = new LinkedList();
+        disconnectedUIGinit();
+        for (int i = 0; i < 100; i++) {
+            if (GraphSearch.threeSweepUIG(this.graphs[i])) {
+                passed++;
+            } else {
+                rejected++;
+                rejectedgraph.add(i);
+            }
+            System.out.println("three sweep: passed " + passed + " rejected " + rejected);
+        }
+        for (int i : rejectedgraph) {
+            System.out.println(i);
+        }
+        assertTrue(passed == 100);
+
+    }
+
+    @Test
+    public void twoSweepDisconnectedUIGTest() throws FileNotFoundException {
+        // pass
+        int passed = 0;
+        int rejected = 0;
+        LinkedList<Integer> rejectedgraph = new LinkedList<>();
+
+        disconnectedUIGinit();
+        for (int i = 0; i < 100; i++) {
+            if (GraphSearch.twoSweepUIG(this.graphs[i])) {
+                passed++;
+            } else {
+                rejected++;
+                rejectedgraph.add(i);
+            }
+            System.out.println("three sweep: passed " + passed + " rejected " + rejected);
+        }
+
+        for (int i : rejectedgraph) {
+            System.out.println(i);
+        }
+        assertTrue(passed == 100);
     }
 }

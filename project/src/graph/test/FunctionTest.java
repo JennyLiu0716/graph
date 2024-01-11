@@ -36,16 +36,16 @@ public class FunctionTest {
         // pass
         Random rand = new Random();
         for (int i = 10; i <= 20; i++) {
-            int sum = rand.nextInt(100)+i;
+            int sum = rand.nextInt(100) + i;
             int[] arr = Functions.randomList(i, sum);
             int check = 0;
 
-            for(int j:arr){
-                check+=j;
+            for (int j : arr) {
+                check += j;
             }
             System.out.println(check);
             System.out.print(sum);
-            assertTrue(check==sum);
+            assertTrue(check == sum);
 
         }
 

@@ -104,7 +104,7 @@ public class GraphSearch {
                 }
             }
         }
-        
+
         level[V] = largestLevel;
         return level;
     }
@@ -174,26 +174,25 @@ public class GraphSearch {
      * @return whether or not graph g is a UIG
      */
     public static boolean threeSweepUIG(Graph g) {
+
+        for (Graph graph : g.connectedComponents) {
+            if (!threeSweepUIG_cc(graph))
+                return false;
+        }
+
+        return true;
+    }
+
+    public static boolean threeSweepUIG_cc(Graph g) {
+
         int[] t = LBFS(g);
         int[] t_new = Functions.transferIE(t);
-
-        // testing graph14.txt vertex order is incorrect
-        // System.out.println("vertexOrder1");
-        // System.out.println(Arrays.toString(t_new));
 
         int[] sigma = LBFSplus(g, t_new);
         int[] sigma_new = Functions.transferIE(sigma);
 
-        // testing graph14.txt vertex order is incorrect
-        // System.out.println("vertexOrder2");
-        // System.out.println(Arrays.toString(sigma_new));
-
         int[] sigmaPLUS = LBFSplus(g, sigma_new);
         int[] sigmaPLUS_new = Functions.transferIE(sigmaPLUS);
-
-        // testing graph14.txt vertex order is incorrect
-        // System.out.println("vertexOrder1");
-        // System.out.println(Arrays.toString(sigmaPLUS_new));
 
         return intervalOrderingChecking(g, sigmaPLUS_new);
     }
@@ -209,10 +208,22 @@ public class GraphSearch {
      * @return whether or not graph g is a UIG
      */
     public static boolean twoSweepUIG(Graph g) {
+
+        for (Graph graph : g.connectedComponents) {
+            if (!twoSweepUIG_cc(graph))
+                return false;
+        }
+        return true;
+
+    }
+
+    public static boolean twoSweepUIG_cc(Graph g) {
+
         int u = findendVertex(g);
         int[] sigma = LBFSdelta(g, u);
         int[] sigma_new = Functions.transferIE(sigma);
         return intervalOrderingChecking(g, sigma_new);
+
     }
 
     private static int[] LBFS(Graph g) {
@@ -270,7 +281,8 @@ public class GraphSearch {
         // out, a certain condition related to the permutation should be satisfied.
         // To enable a O(1) implementation to pick the vertex, we sort the adjacency
         // list by the permutation.
-        // Then, since we scan the list of neighbors from left to right in the linkedlist,
+        // Then, since we scan the list of neighbors from left to right in the
+        // linkedlist,
         // then order we scan is the exactly the permutation.
         // In this case every small linked list is guaranted to be sorted by
         // permutation, we don't need extra modify in the procedure.
@@ -521,13 +533,14 @@ public class GraphSearch {
         // We scan the vertex from right to left in vertexOrder, so the label of vertex
         // is decreasing while scanning.
         // When scanning a node, we add it to adjacency list for its neighbors
-        // Since Linkedlist add() Method in Java appends the specified element to the end.
+        // Since Linkedlist add() Method in Java appends the specified element to the
+        // end.
         // So, after scanning all vertices and adding to the corresponding adjacency
         // list, we have already sorted the adjacency list.
 
         LinkedList<Integer>[] newadj = new LinkedList[vertexNum];
 
-        for(int i=0;i<vertexNum;i++){
+        for (int i = 0; i < vertexNum; i++) {
             newadj[i] = new LinkedList<>();
         }
 
@@ -543,7 +556,7 @@ public class GraphSearch {
         // check whether the ith list starts from the first number to i+1.
         // convert the checking to whether the number at position (first - (i+1)) is
         // exactly i+1
-        // this for loop is O(m+n) 
+        // this for loop is O(m+n)
         for (int i = 0; i < vertexNum; i++) {
             LinkedList<Integer> list = newadj[i];
             if (list.isEmpty())

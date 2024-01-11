@@ -22,16 +22,6 @@ import utils.Functions;
 public class GraphGenerator {
 
     /**
-     * generate disconnected graph from existing connected graph
-     * Idea: find min s-t cut, delete edges
-     * 
-     * @param path
-     */
-    public static void disconnectExistingGraph(String path) {
-
-    }
-
-    /**
      * UPDATED
      * interface for graph generator
      * 
@@ -88,7 +78,7 @@ public class GraphGenerator {
                 // for each graph, how many vertices are there? at least 2
                 if (random) {
                     Random rand = new Random();
-                    vertexNum = 2 + rand.nextInt(vertexNumber-1);
+                    vertexNum = 2 + rand.nextInt(vertexNumber - 1);
                 }
 
                 // how many connected components? 2...vertexNum
@@ -99,7 +89,7 @@ public class GraphGenerator {
                 // start from index 0
                 int[] cc_nodes = Functions.randomList(cc, vertexNum);
 
-                int[] full_lastNeighbors = new int[vertexNum+1];
+                int[] full_lastNeighbors = new int[vertexNum + 1];
                 int pointer = 1;
                 int previous_node = 0;
 
@@ -114,10 +104,10 @@ public class GraphGenerator {
                         lastNeighbors = intervalGraph(nodenumber, connected);
                     }
 
-                    for(int k=1;k<lastNeighbors.length;k++){
-                        full_lastNeighbors[pointer++] = lastNeighbors[k]+previous_node;
+                    for (int k = 1; k < lastNeighbors.length; k++) {
+                        full_lastNeighbors[pointer++] = lastNeighbors[k] + previous_node;
                     }
-                    previous_node+=nodenumber;
+                    previous_node += nodenumber;
 
                 }
                 generate(graphName, path, Integer.toString(j), full_lastNeighbors);
