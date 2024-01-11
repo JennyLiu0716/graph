@@ -1,8 +1,8 @@
 package graph.algorithms;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Vector;
 import java.util.stream.IntStream;
 
 import graph.Graph;
@@ -37,7 +37,7 @@ public class GraphSearch {
     public static int findendVertex(Graph g) {
 
         int n = g.vertexNum;
-        Vector<Integer>[] adj = g.adjacentGraph;
+        LinkedList[] adj = g.adjlist;
         int[] level = BFS(g);
         int lastlevel = level[n];
 
@@ -67,7 +67,7 @@ public class GraphSearch {
      * @return the level of each vertex
      */
     private static int[] BFS(Graph g) {
-        Vector<Integer>[] adj = g.adjacentGraph;
+        LinkedList[] adj = g.adjlist;
         int V = g.vertexNum;
 
         // Mark all the vertices as not visited(By default set as false)
@@ -87,13 +87,14 @@ public class GraphSearch {
         int largestLevel = 0;
 
         while (queue.size() != 0) {
-
             // Dequeue a vertex from queue and print it
             int s = queue.poll();
 
             // Get all adjacent vertices of the dequeued vertex s
             // If an adjacent has not been visited, then mark it visited and enqueue it
-            for (int j : adj[s]) {
+            Iterator it = adj[s].iterator();
+            while (it.hasNext()) {
+                int j = (int) it.next();
                 if (!visited[j]) {
                     visited[j] = true;
                     queue.add(j);
@@ -103,6 +104,7 @@ public class GraphSearch {
                 }
             }
         }
+        
         level[V] = largestLevel;
         return level;
     }
@@ -116,7 +118,7 @@ public class GraphSearch {
      */
     public static int[] getDegreeOrder(Graph g) {
 
-        Vector<Integer>[] adjgraph = g.adjacentGraph;
+        LinkedList<Integer>[] adjgraph = g.adjlist;
         int vertexNum = g.vertexNum;
 
         // degree for each vertex
@@ -139,12 +141,12 @@ public class GraphSearch {
      * @param originalLists
      * @param permutation
      **/
-    private static Vector<Integer>[] sortAdjacencyLists(Vector<Integer>[] originalLists, int[] permutation) {
+    private static LinkedList<Integer>[] sortAdjacencyLists(LinkedList<Integer>[] originalLists, int[] permutation) {
 
         int vertexNum = originalLists.length;
-        Vector<Integer>[] newlist = new Vector[vertexNum];
+        LinkedList<Integer>[] newlist = new LinkedList[vertexNum];
         for (int i = 0; i < vertexNum; i++) {
-            newlist[i] = new Vector<>();
+            newlist[i] = new LinkedList<>();
         }
 
         // Similar to the sort adjacent list precedure in intervalOrderingChecking, but
@@ -215,17 +217,17 @@ public class GraphSearch {
 
     private static int[] LBFS(Graph g) {
         int[] permutation = IntStream.range(0, g.vertexNum).toArray();
-        return basicLBFS(g.adjacentGraph, permutation, 0, false, false);
+        return basicLBFS(g.adjlist, permutation, 0, false, false);
     }
 
     private static int[] LBFSplus(Graph g, int[] permutation) {
-        return basicLBFS(g.adjacentGraph, permutation, -1, true, false);
+        return basicLBFS(g.adjlist, permutation, -1, true, false);
     }
 
     private static int[] LBFSdelta(Graph g, int out) {
         // this permutation is sorted vertices by degree from small to large
         int[] permutation = getDegreeOrder(g);
-        return basicLBFS(g.adjacentGraph, permutation, out, false, true);
+        return basicLBFS(g.adjlist, permutation, out, false, true);
     }
 
     /**
@@ -259,7 +261,7 @@ public class GraphSearch {
      * @param plus        - whether this is LBFS plus algorithm
      * @return
      */
-    private static int[] basicLBFS(Vector<Integer>[] adjgraph, int[] permutation, int out, boolean plus,
+    private static int[] basicLBFS(LinkedList<Integer>[] adjgraph, int[] permutation, int out, boolean plus,
             boolean delta) {
 
         int vertexNum = permutation.length;
@@ -268,15 +270,14 @@ public class GraphSearch {
         // out, a certain condition related to the permutation should be satisfied.
         // To enable a O(1) implementation to pick the vertex, we sort the adjacency
         // list by the permutation.
-        // Then, since we scan the list of neighbors from left to right in the vector,
+        // Then, since we scan the list of neighbors from left to right in the linkedlist,
         // then order we scan is the exactly the permutation.
         // In this case every small linked list is guaranted to be sorted by
         // permutation, we don't need extra modify in the procedure.
-        Vector<Integer>[] adj = new Vector[vertexNum];
 
         // we also sort the adj list for normal LBFS, because we also give a permutation
         // by default from 1 to n
-        adj = sortAdjacencyLists(adjgraph, permutation);
+        LinkedList<Integer>[] adj = sortAdjacencyLists(adjgraph, permutation);
 
         // correct adj
         // for(int i=0;i<adj.length;i++){
@@ -398,7 +399,7 @@ public class GraphSearch {
             // label)
             // Insert the node into the end of the new list
 
-            Vector<Node> emptyLists = new Vector<>();
+            LinkedList<Node> emptyLists = new LinkedList<>();
 
             for (int j : adj[outVertex]) {
 
@@ -505,7 +506,7 @@ public class GraphSearch {
     public static boolean intervalOrderingChecking(Graph g, int[] vertexOrder) {
 
         int vertexNum = vertexOrder.length;
-        Vector<Integer> adj[] = g.adjacentGraph;
+        LinkedList<Integer> adj[] = g.adjlist;
 
         // renumber vertices:
         // index of label -> orignal vertex number
@@ -520,20 +521,18 @@ public class GraphSearch {
         // We scan the vertex from right to left in vertexOrder, so the label of vertex
         // is decreasing while scanning.
         // When scanning a node, we add it to adjacency list for its neighbors
-        // Since Vector add() Method in Java appends the specified element to the end of
-        // this vector.
+        // Since Linkedlist add() Method in Java appends the specified element to the end.
         // So, after scanning all vertices and adding to the corresponding adjacency
         // list, we have already sorted the adjacency list.
 
-        Vector<Integer>[] newadj = new Vector[vertexNum];
-        for (int i = 0; i < vertexNum; i++) {
-            newadj[i] = new Vector<>();
+        LinkedList<Integer>[] newadj = new LinkedList[vertexNum];
+
+        for(int i=0;i<vertexNum;i++){
+            newadj[i] = new LinkedList<>();
         }
 
         // sort the adjacent list within each vertex in decreasing order by the
         // vertexOrder
-        // and store the adjacent list for each vertex in the lists
-        // lists is a list for DList, by vertexOrder
         for (int i = vertexNum - 1; i >= 0; i--) {
             int vertex = vertexOrder[i];
             for (int j : adj[vertex]) {
@@ -544,10 +543,9 @@ public class GraphSearch {
         // check whether the ith list starts from the first number to i+1.
         // convert the checking to whether the number at position (first - (i+1)) is
         // exactly i+1
-        // since Vector stores an array of the element it store, so the
-        // Vector.get(index) is implemented in O(1) by default
+        // this for loop is O(m+n) 
         for (int i = 0; i < vertexNum; i++) {
-            Vector<Integer> list = newadj[i];
+            LinkedList<Integer> list = newadj[i];
             if (list.isEmpty())
                 continue;
             int first = list.get(0);

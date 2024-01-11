@@ -4,7 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.util.Arrays;
-import java.util.Vector;
+import java.util.LinkedList;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class GraphSeachTest {
     Graph[] graphs = new Graph[100];
 
     @Test
-    public void init() throws FileNotFoundException {
+    public void connectedUIGinit() throws FileNotFoundException {
         String path = "";
         for (int i = 1; i <= 100; i++) {
             path = ".\\project\\graphs\\unit_interval_graph_connected" + i + ".txt";
@@ -28,11 +28,11 @@ public class GraphSeachTest {
     }
 
     @Test
-    public void threeSweepUIGTest() throws FileNotFoundException {
+    public void threeSweepConnectedUIGTest() throws FileNotFoundException {
         int passed = 0;
         int rejected = 0;
-        Vector<Integer> rejectedgraph = new Vector<>();
-        init();
+        LinkedList<Integer> rejectedgraph = new LinkedList();
+        connectedUIGinit();
         for (int i = 0; i < 100; i++) {
             if (GraphSearch.threeSweepUIG(this.graphs[i])) {
                 passed++;
@@ -49,13 +49,13 @@ public class GraphSeachTest {
     }
 
     @Test
-    public void twoSweepUIGTest() throws FileNotFoundException {
+    public void twoSweepConnectedUIGTest() throws FileNotFoundException {
         // pass
         int passed = 0;
         int rejected = 0;
-        Vector<Integer> rejectedgraph = new Vector<>();
+        LinkedList<Integer> rejectedgraph = new LinkedList<>();
 
-        init();
+        connectedUIGinit();
         for (int i = 0; i < 100; i++) {
             if (GraphSearch.twoSweepUIG(this.graphs[i])) {
                 passed++;

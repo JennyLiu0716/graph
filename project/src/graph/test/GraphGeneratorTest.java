@@ -16,6 +16,11 @@ public class GraphGeneratorTest {
         GraphGenerator.generator(20, true, path, true, 100, true);
     }
     
+	@Test
+    public void generateDisconnectedTest() throws FileNotFoundException{
+        String path = ".\\project\\graphs\\";
+        GraphGenerator.generator(20, false, path, true, 100, true);
+    }
     @Test
 	public void unitIntervalGraphTest() {
 		// pass

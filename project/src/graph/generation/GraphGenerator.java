@@ -22,6 +22,16 @@ import utils.Functions;
 public class GraphGenerator {
 
     /**
+     * generate disconnected graph from existing connected graph
+     * Idea: find min s-t cut, delete edges
+     * 
+     * @param path
+     */
+    public static void disconnectExistingGraph(String path) {
+
+    }
+
+    /**
      * UPDATED
      * interface for graph generator
      * 
@@ -43,29 +53,78 @@ public class GraphGenerator {
         } else {
             graphName = "interval_graph";
         }
-        if (connected)
+        if (connected) {
             graphName += "_connected";
+            int vertexNum;
+            int[] lastNeighbors;
 
-        int vertexNum;
-        int[] lastNeighbors;
+            for (int j = 1; j <= graphNum; j++) {
 
-        for (int j = 1; j <= graphNum; j++) {
+                vertexNum = vertexNumber;
 
-            vertexNum = vertexNumber;
+                if (random) {
+                    Random rand = new Random();
+                    vertexNum = 1 + rand.nextInt(vertexNumber);
+                }
 
-            if (random) {
+                if (unit) {
+                    lastNeighbors = unitIntervalGraph(vertexNum, connected);
+                } else {
+                    lastNeighbors = intervalGraph(vertexNum, connected);
+                }
+
+                generate(graphName, path, Integer.toString(j), lastNeighbors);
+            }
+        } else {
+            // generate disconnected graph
+            graphName += "_disconnected";
+            int vertexNum;
+            int[] lastNeighbors;
+
+            for (int j = 1; j <= graphNum; j++) {
+
+                vertexNum = vertexNumber;
+
+                // for each graph, how many vertices are there? at least 2
+                if (random) {
+                    Random rand = new Random();
+                    vertexNum = 2 + rand.nextInt(vertexNumber-1);
+                }
+
+                // how many connected components? 2...vertexNum
                 Random rand = new Random();
-                vertexNum = 1 + rand.nextInt(vertexNumber);
+                int cc = 2 + rand.nextInt(vertexNum - 1);
+
+                // how many nodes for each connected component? At least 1, sum = vertexNumber
+                // start from index 0
+                int[] cc_nodes = Functions.randomList(cc, vertexNum);
+
+                int[] full_lastNeighbors = new int[vertexNum+1];
+                int pointer = 1;
+                int previous_node = 0;
+
+                // for each connected component, generate the last neighbors
+                // merge to the full last neighbors
+                for (int component = 1; component <= cc; component++) {
+                    int nodenumber = cc_nodes[component - 1];
+
+                    if (unit) {
+                        lastNeighbors = unitIntervalGraph(nodenumber, connected);
+                    } else {
+                        lastNeighbors = intervalGraph(nodenumber, connected);
+                    }
+
+                    for(int k=1;k<lastNeighbors.length;k++){
+                        full_lastNeighbors[pointer++] = lastNeighbors[k]+previous_node;
+                    }
+                    previous_node+=nodenumber;
+
+                }
+                generate(graphName, path, Integer.toString(j), full_lastNeighbors);
             }
 
-            if (unit) {
-                lastNeighbors = unitIntervalGraph(vertexNum, connected);
-            } else {
-                lastNeighbors = intervalGraph(vertexNum, connected);
-            }
-
-            generate(graphName, path, Integer.toString(j), lastNeighbors);
         }
+
     }
 
     /**
@@ -104,26 +163,35 @@ public class GraphGenerator {
             if (connected) {
                 if (maxcovered > i) {
                     // any number from i to n, since i is assumed to be the left end
-                    if (vertexNum - i + 1 <= 0) lastNeighbors[i] = i;
-                    else lastNeighbors[i] = i + rand.nextInt(vertexNum - i + 1);
-                    if (lastNeighbors[i] > vertexNum) lastNeighbors[i] = vertexNum;
+                    if (vertexNum - i + 1 <= 0)
+                        lastNeighbors[i] = i;
+                    else
+                        lastNeighbors[i] = i + rand.nextInt(vertexNum - i + 1);
+                    if (lastNeighbors[i] > vertexNum)
+                        lastNeighbors[i] = vertexNum;
 
                     if (lastNeighbors[i] > maxcovered)
                         maxcovered = lastNeighbors[i];
                 } else {
                     // any number from i+1 to n
-                    if (vertexNum - i <= 0) lastNeighbors[i] = i;
-                    else lastNeighbors[i] = i + 1 + rand.nextInt(vertexNum - i);
-                    if (lastNeighbors[i] > vertexNum) lastNeighbors[i] = vertexNum;
+                    if (vertexNum - i <= 0)
+                        lastNeighbors[i] = i;
+                    else
+                        lastNeighbors[i] = i + 1 + rand.nextInt(vertexNum - i);
+                    if (lastNeighbors[i] > vertexNum)
+                        lastNeighbors[i] = vertexNum;
 
                     if (lastNeighbors[i] > maxcovered)
                         maxcovered = lastNeighbors[i];
                 }
             } else {
                 // any number from i to n, since i is assumed to be the left end
-                if (vertexNum - i + 1 <= 0) lastNeighbors[i] = i;
-                else lastNeighbors[i] = i + rand.nextInt(vertexNum - i + 1);
-                if (lastNeighbors[i] > vertexNum) lastNeighbors[i] = vertexNum;
+                if (vertexNum - i + 1 <= 0)
+                    lastNeighbors[i] = i;
+                else
+                    lastNeighbors[i] = i + rand.nextInt(vertexNum - i + 1);
+                if (lastNeighbors[i] > vertexNum)
+                    lastNeighbors[i] = vertexNum;
             }
 
         }
@@ -160,10 +228,13 @@ public class GraphGenerator {
                 if (maxcovered > i) {
                     // satisfy the non-decreasing right end condition
                     // since it is connected, previous should be not less than i
-                    if (vertexNum - previous + 1<=0) lastNeighbors[i] = previous;
-                    else lastNeighbors[i] = previous + rand.nextInt(vertexNum - previous + 1);
+                    if (vertexNum - previous + 1 <= 0)
+                        lastNeighbors[i] = previous;
+                    else
+                        lastNeighbors[i] = previous + rand.nextInt(vertexNum - previous + 1);
 
-                    if (lastNeighbors[i] > vertexNum) lastNeighbors[i] = vertexNum;
+                    if (lastNeighbors[i] > vertexNum)
+                        lastNeighbors[i] = vertexNum;
 
                     if (lastNeighbors[i] > maxcovered)
                         maxcovered = lastNeighbors[i];
@@ -172,10 +243,13 @@ public class GraphGenerator {
                 } else {
                     // max covered = i
                     // any number from i+1 to n
-                    if (vertexNum-i <=0) lastNeighbors[i] = i+1;
-                    else lastNeighbors[i] = i + 1 + rand.nextInt(vertexNum - i);
+                    if (vertexNum - i <= 0)
+                        lastNeighbors[i] = i + 1;
+                    else
+                        lastNeighbors[i] = i + 1 + rand.nextInt(vertexNum - i);
 
-                    if (lastNeighbors[i] > vertexNum) lastNeighbors[i] = vertexNum;
+                    if (lastNeighbors[i] > vertexNum)
+                        lastNeighbors[i] = vertexNum;
 
                     if (lastNeighbors[i] > maxcovered)
                         maxcovered = lastNeighbors[i];
@@ -189,23 +263,27 @@ public class GraphGenerator {
                 // if the last neighbor for the previous node is large than or equal to i: the
                 // last neighbor for node i should not be less than that of the previous node
                 if (previous < i) {
-                    if (vertexNum - i + 1<=0) lastNeighbors[i] = i;
-                    else lastNeighbors[i] = i + rand.nextInt(vertexNum - i + 1);
+                    if (vertexNum - i + 1 <= 0)
+                        lastNeighbors[i] = i;
+                    else
+                        lastNeighbors[i] = i + rand.nextInt(vertexNum - i + 1);
 
-                    if (lastNeighbors[i] > vertexNum) lastNeighbors[i] = vertexNum;
+                    if (lastNeighbors[i] > vertexNum)
+                        lastNeighbors[i] = vertexNum;
 
                 } else {
-                    if (vertexNum - previous + 1<=0) lastNeighbors[i] = previous;
-                    else lastNeighbors[i] = previous + rand.nextInt(vertexNum - previous + 1);
-                    if (lastNeighbors[i] > vertexNum) lastNeighbors[i] = vertexNum;
+                    if (vertexNum - previous + 1 <= 0)
+                        lastNeighbors[i] = previous;
+                    else
+                        lastNeighbors[i] = previous + rand.nextInt(vertexNum - previous + 1);
+                    if (lastNeighbors[i] > vertexNum)
+                        lastNeighbors[i] = vertexNum;
                 }
                 previous = lastNeighbors[i];
             }
         }
         return lastNeighbors;
     }
-
-
 
     /**
      * UPDATED
@@ -240,7 +318,7 @@ public class GraphGenerator {
             // renaming the vertices by permutation
             for (int i = 1; i <= nodeNum; i++) {
                 for (int j = i + 1; j <= lastNeighbors[i]; j++) {
-                    writer.println("e " + permutation[i-1] + " " + permutation[j-1]);
+                    writer.println("e " + permutation[i - 1] + " " + permutation[j - 1]);
                 }
             }
 
