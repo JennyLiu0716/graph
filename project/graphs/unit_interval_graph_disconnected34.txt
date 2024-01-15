@@ -1,1 +1,5 @@
-p edge 3 0
+p edge 9 4
+e 6 4
+e 1 9
+e 1 5
+e 9 5

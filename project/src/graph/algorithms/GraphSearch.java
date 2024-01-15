@@ -226,19 +226,50 @@ public class GraphSearch {
 
     }
 
+    public static boolean interval_recognition(Graph g){
+        for(Graph graph: g.connectedComponents){
+            if (!interval_recognition_cc(graph))
+                return false;
+        }
+        return true;
+    }
+
+    public static boolean interval_recognition_cc(Graph g){
+        int[] t = LBFS(g);
+        int[] t_new = Functions.transferIE(t);
+
+        int[] tplus = LBFSplus(g, t_new);
+        int[] tplus_new = Functions.transferIE(tplus);
+
+        int[] pi = LBFSup(g, tplus_new);
+        int[] pi_new = Functions.transferIE(pi);
+
+        int[] piplus = LBFSplus(g, pi_new);
+        int[] piplus_new = Functions.transferIE(piplus);
+
+        return intervalOrderingChecking(g, piplus_new);
+
+
+
+    }
+
     private static int[] LBFS(Graph g) {
         int[] permutation = IntStream.range(0, g.vertexNum).toArray();
-        return basicLBFS(g.adjlist, permutation, 0, false, false);
+        return basicLBFS(g.adjlist, permutation, 0, false, false, false);
     }
 
     private static int[] LBFSplus(Graph g, int[] permutation) {
-        return basicLBFS(g.adjlist, permutation, -1, true, false);
+        return basicLBFS(g.adjlist, permutation, -1, true, false, false);
     }
 
     private static int[] LBFSdelta(Graph g, int out) {
         // this permutation is sorted vertices by degree from small to large
         int[] permutation = getDegreeOrder(g);
-        return basicLBFS(g.adjlist, permutation, out, false, true);
+        return basicLBFS(g.adjlist, permutation, out, false, true, false);
+    }
+
+    private static int[] LBFSup(Graph g, int[] permutation){
+        return basicLBFS(g.adjlist, permutation, -1, true, false, true);
     }
 
     /**
@@ -270,12 +301,28 @@ public class GraphSearch {
      * @param permutation - [0,1,...,n] for LBFS
      * @param out         - vertex to take out at the first step, 0 for LBFS
      * @param plus        - whether this is LBFS plus algorithm
+     * @param delta       - whether this is LBFS delta algorithm
+     * @param up          - whether this is LBFS up algorithm
      * @return
      */
     private static int[] basicLBFS(LinkedList<Integer>[] adjgraph, int[] permutation, int out, boolean plus,
-            boolean delta) {
+            boolean delta, boolean up) {
 
         int vertexNum = permutation.length;
+
+
+        // used for LBFS up
+        int[] inverse_permutation = Functions.transferIE(permutation);
+        // We maintain an array degree_before that degree_before[i] is the number of neighbors of vertex i that are before vertex i in permutation
+        // We maintain an array degree_after that degree_after[i] is the number of neighbors of vertex i that are after vertex i in permutation
+        int[] degree_before = new int[vertexNum];
+        int[] degree_after = new int[vertexNum]; 
+        Arrays.fill(degree_before,0);
+        Arrays.fill(degree_after,0);
+        for(int i = 0; i<vertexNum;i++)
+            for(int j:adjgraph[i])
+                if (inverse_permutation[j]<inverse_permutation[i]) degree_before[i]++;
+                else degree_after[i]++;
 
         // For LBFSplus and LBFSdelta, in step 2.2, when choosing the vertex to be taken
         // out, a certain condition related to the permutation should be satisfied.
@@ -290,6 +337,19 @@ public class GraphSearch {
         // we also sort the adj list for normal LBFS, because we also give a permutation
         // by default from 1 to n
         LinkedList<Integer>[] adj = sortAdjacencyLists(adjgraph, permutation);
+
+        // used for lbfs up
+        // keep track of the last vertex in t available
+        Node[][] adj_copy_track = new Node[vertexNum][vertexNum];
+        DoublyLinkedList[] adj_copy = new DoublyLinkedList[vertexNum];
+        for(int i = 0; i<vertexNum;i++){
+            adj_copy[i] = new DoublyLinkedList();
+            for (int j:adj[i]){
+                Node node = new Node<Integer>(j);
+                adj_copy[i].insertAtEnd(null);
+                adj_copy_track[i][j] = node;
+            }
+        }
 
         // correct adj
         // for(int i=0;i<adj.length;i++){
@@ -359,12 +419,31 @@ public class GraphSearch {
             // S ← unvisited vertices with the lexicographically largest label;
             DoublyLinkedList superNode = (DoublyLinkedList) lexicographical_linkedlist.head.element;
 
-            Node outNode;// node gonna be taken out
+            Node outNode = null;// node gonna be taken out
 
             // 2.2. v ← the last vertex of σ|S;
             // for each small linked list, by implementation it is sorted by permutation
             if (plus == true) {
                 outNode = superNode.tail;
+            } else if (up == true){
+                if (superNode.head == superNode.tail){
+                    outNode = superNode.head;
+                }else {
+                    Node vp = superNode.head;
+                    Node vq = superNode.tail;
+                    int vp_vertex = (int) vp.element;
+                    int vq_vertex = (int) vq.element;
+
+                    if (degree_before[vp_vertex]>0) {
+                        outNode = vp;
+                    }
+                    else if (degree_after[vq_vertex]>0) {
+                        Node outv = adj_copy[vq_vertex].tail;
+                        outNode = nodes[(int)outv.element];
+                    }
+                    else outNode = vq;
+                }
+
             } else {
                 // take out the node:
                 // 1st time: arbitrary
@@ -414,6 +493,13 @@ public class GraphSearch {
             LinkedList<Node> emptyLists = new LinkedList<>();
 
             for (int j : adj[outVertex]) {
+
+                if (inverse_permutation[j]>inverse_permutation[outVertex]){
+                    degree_before[j]--;
+                }else {
+                    degree_after[j]--;
+                    adj_copy[j].delete(adj_copy_track[j][outVertex]);
+                }
 
                 // if the adjacent nodes has already been taken out, continue
                 if (sigma[j] != -1)

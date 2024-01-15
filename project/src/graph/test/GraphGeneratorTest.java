@@ -11,15 +11,27 @@ import graph.Graph;
 
 public class GraphGeneratorTest {
 	@Test
-	public void generateTest() throws FileNotFoundException {
+	public void generateUIGconnectedTest() throws FileNotFoundException {
 		String path = ".\\project\\graphs\\";
 		GraphGenerator.generator(20, true, path, true, 100, true);
 	}
 
 	@Test
-	public void generateDisconnectedTest() throws FileNotFoundException {
+	public void generateUIGDisconnectedTest() throws FileNotFoundException {
 		String path = ".\\project\\graphs\\";
 		GraphGenerator.generator(20, false, path, true, 100, true);
+	}
+
+	@Test
+	public void generateIGDisconnectedTest() throws FileNotFoundException {
+		String path = ".\\project\\graphs\\";
+		GraphGenerator.generator(20, false, path, true, 100, false);
+	}
+
+	@Test
+	public void generateIGconnectedTest() throws FileNotFoundException {
+		String path = ".\\project\\graphs\\";
+		GraphGenerator.generator(20, true, path, true, 100, false);
 	}
 
 	@Test
