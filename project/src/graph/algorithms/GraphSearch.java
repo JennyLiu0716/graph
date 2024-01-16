@@ -194,7 +194,7 @@ public class GraphSearch {
         int[] sigmaPLUS = LBFSplus(g, sigma_new);
         int[] sigmaPLUS_new = Functions.transferIE(sigmaPLUS);
 
-        return intervalOrderingChecking(g, sigmaPLUS_new);
+        return intervalOrderingChecking(g, sigmaPLUS_new, true);
     }
 
     /**
@@ -222,19 +222,19 @@ public class GraphSearch {
         int u = findendVertex(g);
         int[] sigma = LBFSdelta(g, u);
         int[] sigma_new = Functions.transferIE(sigma);
-        return intervalOrderingChecking(g, sigma_new);
+        return intervalOrderingChecking(g, sigma_new, true);
 
     }
 
-    public static boolean interval_recognition(Graph g){
-        for(Graph graph: g.connectedComponents){
+    public static boolean interval_recognition(Graph g) {
+        for (Graph graph : g.connectedComponents) {
             if (!interval_recognition_cc(graph))
                 return false;
         }
         return true;
     }
 
-    public static boolean interval_recognition_cc(Graph g){
+    public static boolean interval_recognition_cc(Graph g) {
         int[] t = LBFS(g);
         int[] t_new = Functions.transferIE(t);
 
@@ -247,9 +247,7 @@ public class GraphSearch {
         int[] piplus = LBFSplus(g, pi_new);
         int[] piplus_new = Functions.transferIE(piplus);
 
-        return intervalOrderingChecking(g, piplus_new);
-
-
+        return intervalOrderingChecking(g, piplus_new, false);
 
     }
 
@@ -268,7 +266,7 @@ public class GraphSearch {
         return basicLBFS(g.adjlist, permutation, out, false, true, false);
     }
 
-    private static int[] LBFSup(Graph g, int[] permutation){
+    private static int[] LBFSup(Graph g, int[] permutation) {
         return basicLBFS(g.adjlist, permutation, -1, true, false, true);
     }
 
@@ -310,19 +308,22 @@ public class GraphSearch {
 
         int vertexNum = permutation.length;
 
-
         // used for LBFS up
         int[] inverse_permutation = Functions.transferIE(permutation);
-        // We maintain an array degree_before that degree_before[i] is the number of neighbors of vertex i that are before vertex i in permutation
-        // We maintain an array degree_after that degree_after[i] is the number of neighbors of vertex i that are after vertex i in permutation
+        // We maintain an array degree_before that degree_before[i] is the number of
+        // neighbors of vertex i that are before vertex i in permutation
+        // We maintain an array degree_after that degree_after[i] is the number of
+        // neighbors of vertex i that are after vertex i in permutation
         int[] degree_before = new int[vertexNum];
-        int[] degree_after = new int[vertexNum]; 
-        Arrays.fill(degree_before,0);
-        Arrays.fill(degree_after,0);
-        for(int i = 0; i<vertexNum;i++)
-            for(int j:adjgraph[i])
-                if (inverse_permutation[j]<inverse_permutation[i]) degree_before[i]++;
-                else degree_after[i]++;
+        int[] degree_after = new int[vertexNum];
+        Arrays.fill(degree_before, 0);
+        Arrays.fill(degree_after, 0);
+        for (int i = 0; i < vertexNum; i++)
+            for (int j : adjgraph[i])
+                if (inverse_permutation[j] < inverse_permutation[i])
+                    degree_before[i]++;
+                else
+                    degree_after[i]++;
 
         // For LBFSplus and LBFSdelta, in step 2.2, when choosing the vertex to be taken
         // out, a certain condition related to the permutation should be satisfied.
@@ -342,9 +343,9 @@ public class GraphSearch {
         // keep track of the last vertex in t available
         Node[][] adj_copy_track = new Node[vertexNum][vertexNum];
         DoublyLinkedList[] adj_copy = new DoublyLinkedList[vertexNum];
-        for(int i = 0; i<vertexNum;i++){
+        for (int i = 0; i < vertexNum; i++) {
             adj_copy[i] = new DoublyLinkedList();
-            for (int j:adj[i]){
+            for (int j : adj[i]) {
                 Node node = new Node<Integer>(j);
                 adj_copy[i].insertAtEnd(null);
                 adj_copy_track[i][j] = node;
@@ -425,23 +426,22 @@ public class GraphSearch {
             // for each small linked list, by implementation it is sorted by permutation
             if (plus == true) {
                 outNode = superNode.tail;
-            } else if (up == true){
-                if (superNode.head == superNode.tail){
+            } else if (up == true) {
+                if (superNode.head == superNode.tail) {
                     outNode = superNode.head;
-                }else {
+                } else {
                     Node vp = superNode.head;
                     Node vq = superNode.tail;
                     int vp_vertex = (int) vp.element;
                     int vq_vertex = (int) vq.element;
 
-                    if (degree_before[vp_vertex]>0) {
+                    if (degree_before[vp_vertex] > 0) {
                         outNode = vp;
-                    }
-                    else if (degree_after[vq_vertex]>0) {
+                    } else if (degree_after[vq_vertex] > 0) {
                         Node outv = adj_copy[vq_vertex].tail;
-                        outNode = nodes[(int)outv.element];
-                    }
-                    else outNode = vq;
+                        outNode = nodes[(int) outv.element];
+                    } else
+                        outNode = vq;
                 }
 
             } else {
@@ -494,9 +494,9 @@ public class GraphSearch {
 
             for (int j : adj[outVertex]) {
 
-                if (inverse_permutation[j]>inverse_permutation[outVertex]){
+                if (inverse_permutation[j] > inverse_permutation[outVertex]) {
                     degree_before[j]--;
-                }else {
+                } else {
                     degree_after[j]--;
                     adj_copy[j].delete(adj_copy_track[j][outVertex]);
                 }
@@ -601,7 +601,7 @@ public class GraphSearch {
      * @param sigma
      * @return
      */
-    public static boolean intervalOrderingChecking(Graph g, int[] vertexOrder) {
+    public static boolean intervalOrderingChecking(Graph g, int[] vertexOrder, boolean unit) {
 
         int vertexNum = vertexOrder.length;
         LinkedList<Integer> adj[] = g.adjlist;
@@ -643,6 +643,23 @@ public class GraphSearch {
         // convert the checking to whether the number at position (first - (i+1)) is
         // exactly i+1
         // this for loop is O(m+n)
+
+        // for unit interval graph, we not only need to satisfy the above condition,
+        // but also need to check whether it is unit. that is the end point for vertex
+        // in order should not decrease
+        if (unit) {
+            int lastend = vertexNum;
+            for (int i = 0; i < vertexNum; i++) {
+                LinkedList<Integer> list = newadj[i];
+                if (list.isEmpty())
+                    return false;
+                int end = list.getFirst();
+                if (end < lastend)
+                    return false;
+                lastend = end;
+            }
+        }
+
         for (int i = 0; i < vertexNum; i++) {
             LinkedList<Integer> list = newadj[i];
             if (list.isEmpty())

@@ -247,4 +247,34 @@ public class GraphSeachTest {
         assertFalse(GraphSearch.threeSweepUIG(graph));
         assertFalse(GraphSearch.twoSweepUIG(graph));
     }
+
+    @Test
+    public void claw() throws FileNotFoundException {
+        String path = ".\\project\\graphs\\claw.txt";
+        Graph graph = new Graph();
+        graph.readFile(path);
+        assertTrue(GraphSearch.interval_recognition(graph));
+        assertFalse(GraphSearch.threeSweepUIG(graph));
+        assertFalse(GraphSearch.twoSweepUIG(graph));
+    }
+
+    @Test
+    public void net() throws FileNotFoundException {
+        String path = ".\\project\\graphs\\net.txt";
+        Graph graph = new Graph();
+        graph.readFile(path);
+        assertFalse(GraphSearch.interval_recognition(graph));
+        assertFalse(GraphSearch.threeSweepUIG(graph));
+        assertFalse(GraphSearch.twoSweepUIG(graph));
+    }
+
+    @Test
+    public void sum3() throws FileNotFoundException {
+        String path = ".\\project\\graphs\\3sum.txt";
+        Graph graph = new Graph();
+        graph.readFile(path);
+        assertFalse(GraphSearch.interval_recognition(graph));
+        assertFalse(GraphSearch.threeSweepUIG(graph));
+        assertFalse(GraphSearch.twoSweepUIG(graph));
+    }
 }
