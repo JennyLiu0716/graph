@@ -2,16 +2,9 @@ package graph;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Scanner;
-import java.util.Vector;
 import java.util.stream.IntStream;
-
-import org.w3c.dom.css.ViewCSS;
 
 /**
  * graph contruction - adjacency list representation
@@ -65,7 +58,8 @@ public class Graph {
      * @return a Graph
      * @throws FileNotFoundException when the file cannot be found.
      */
-    public void readFile(String path) throws FileNotFoundException {
+    @SuppressWarnings("unchecked")
+	public void readFile(String path) throws FileNotFoundException {
         File file = new File(path);
         Scanner sc = new Scanner(file);
         String curline = sc.nextLine();
@@ -92,7 +86,8 @@ public class Graph {
         // no edges
         if (this.edgeNum == 0) {
             this.connectedComponents = new LinkedList<>();
-            split_connectedcomponents();
+            splitConnectedComponents();
+            sc.close();
             return;
         }
 
@@ -119,37 +114,39 @@ public class Graph {
             } else
                 break;
         }
+        sc.close();
 
         // process connected components
         this.connectedComponents = new LinkedList<>();
         // this.connectedComponents.add(this);
         // System.out.println(this.connectedComponents.size());
-        split_connectedcomponents();
+        splitConnectedComponents();
     }
 
     /**
      * https://www.geeksforgeeks.org/connected-components-in-an-undirected-graph/
      * 
      */
-    private void split_connectedcomponents() {
-
-        int V = this.vertexNum;
+    private void splitConnectedComponents() {
+        int n = this.vertexNum;
 
         // Mark all the vertices as not visited
-        boolean[] visited = new boolean[V];
-        for (int v = 0; v < V; ++v) {
+        boolean[] visited = new boolean[n];
+        for (int v = 0; v < n; ++v) {
             if (!visited[v]) {
                 // save all reachable vertices from v
-                LinkedList<Integer> nodes = new LinkedList();
+                LinkedList<Integer> nodes = new LinkedList<Integer>();
                 DFSUtil(v, visited, nodes);
                 // System.out.println(nodes.size()+" "+this.vertexNum);
-                this.connectedComponents.add(cc_subgraph(nodes));
+                this.connectedComponents.add(formatComponent(nodes));
             }
         }
     }
 
+    /*
+     * Use DFS to identify components.
+     */
     private void DFSUtil(int v, boolean[] visited, LinkedList<Integer> nodes) {
-
         // Mark the current node as visited store
         visited[v] = true;
         nodes.add(v);
@@ -162,7 +159,14 @@ public class Graph {
         }
     }
 
-    private Graph cc_subgraph(LinkedList<Integer> nodes) {
+    /*
+     * Renumber nodes in a component and return it as a separate graph.
+     * 
+     * This can be changed to return the induced subgraph induced by <code>nodes</code>.
+     * In the current implementation, neighbors are not checked.
+     * For this purpose, we need to check each neighbor of vertex i before adding it to <code>adjlist[i]</code>.  
+     */
+    private Graph formatComponent(LinkedList<Integer> nodes) {
         Graph g = new Graph();
         int v = nodes.size();
         g.vertexNum = v;
