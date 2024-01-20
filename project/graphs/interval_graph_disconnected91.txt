@@ -1,1 +1,1 @@
-p edge 12 0
+p edge 2 0

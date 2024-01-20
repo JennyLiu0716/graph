@@ -648,15 +648,28 @@ public class GraphSearch {
         // but also need to check whether it is unit. that is the end point for vertex
         // in order should not decrease
         if (unit) {
-            int lastend = vertexNum;
+            int lastend = -1;
             for (int i = 0; i < vertexNum; i++) {
                 LinkedList<Integer> list = newadj[i];
-                if (list.isEmpty())
-                    return false;
+                if (list.isEmpty()){
+                    continue;
+                    // return false;
+                }
                 int end = list.getFirst();
-                if (end < lastend)
+                if (end < lastend) end = i;
+                if ( end < lastend){
+                    for(int j = 0; j<list.size(); j++){
+                        System.out.print(list.get(j));
+                    }
+                    System.out.println();
+                    System.out.println(end+" "+ lastend);
                     return false;
+                }
                 lastend = end;
+                // for(int j = 0; j<list.size(); j++){
+                //     System.out.print(list.get(j));
+                // }
+                // System.out.println();
             }
         }
 

@@ -1,3 +1,5 @@
-p edge 9 2
-e 5 7
-e 3 8
+p edge 6 4
+e 2 3
+e 2 4
+e 3 4
+e 1 5
