@@ -1,1 +1,1 @@
-p edge 7 0
+p edge 5 0

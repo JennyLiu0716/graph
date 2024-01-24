@@ -43,8 +43,8 @@ public class FunctionTest {
             for (int j : arr) {
                 check += j;
             }
-            System.out.println(check);
-            System.out.print(sum);
+            // System.out.println(check);
+            // System.out.print(sum);
             assertTrue(check == sum);
 
         }

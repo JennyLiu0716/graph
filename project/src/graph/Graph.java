@@ -15,7 +15,7 @@ public class Graph {
     public int edgeNum;
     public LinkedList<Integer>[] adjlist; // corresponding to simplifidied node list
 
-    // Todo:
+    // not used
     public LinkedList<Graph> connectedComponents;
     public int[] nodelist; // 0...n-1 maybe not consecutive, not ordered
     public int[] simplified_nodelist; // 0...vertexNum-1 consecutive
@@ -85,8 +85,6 @@ public class Graph {
 
         // no edges
         if (this.edgeNum == 0) {
-            this.connectedComponents = new LinkedList<>();
-            splitConnectedComponents();
             sc.close();
             return;
         }
@@ -116,18 +114,14 @@ public class Graph {
         }
         sc.close();
 
-        // process connected components
-        this.connectedComponents = new LinkedList<>();
-        // this.connectedComponents.add(this);
-        // System.out.println(this.connectedComponents.size());
-        splitConnectedComponents();
     }
 
     /**
      * https://www.geeksforgeeks.org/connected-components-in-an-undirected-graph/
-     * 
+     * not used
      */
     private void splitConnectedComponents() {
+        this.connectedComponents = new LinkedList<>();
         int n = this.vertexNum;
 
         // Mark all the vertices as not visited

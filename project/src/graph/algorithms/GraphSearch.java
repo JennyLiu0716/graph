@@ -31,29 +31,50 @@ public class GraphSearch {
      * Lemma 3.7 - Let G be unit interval graph. Let T be a BFS tree of G. A vertex
      * in the last level With the minimum degree is an end vertex.
      * 
+     * Since there can be disconnected graph, we return a list of end vertices. Each vertex
+     * in the list is an end vertex in a connected component. 
+     * 
      * @param g: the input graph
-     * @return an end vertex
+     * @return end vertices list
      */
-    public static int findendVertex(Graph g) {
+    public static int[] findendVertex(Graph g) {
 
         int n = g.vertexNum;
         LinkedList[] adj = g.adjlist;
-        int[] level = BFS(g);
-        int lastlevel = level[n];
 
-        int mindegree = n;
-        int endVertex = -1;
+        // Mark all the vertices as not visited(By default set as false)
+        boolean visited[] = new boolean[n];
 
-        for (int i = 0; i < n; i++) {
-            if (level[i] == lastlevel) {
-                if (adj[i].size() < mindegree) {
-                    mindegree = adj[i].size();
-                    endVertex = i;
+        int[] endVertices = new int[n+1];
+        int endVertexNum = 0;
+
+        for(int j = 0; j<n; j++){
+            if (!visited[j]){
+                int[] largestLevelVertices = BFS(g,j, visited);
+                int largestLevelVerticesNum = largestLevelVertices[0];
+
+                int mindegree = n;
+                int endVertex = -1;
+                
+
+                for(int i = 1; i<=largestLevelVerticesNum;i++){
+                    int vertex = largestLevelVertices[i];
+                    if (adj[vertex].size() < mindegree){
+                        mindegree = adj[vertex].size();
+                        endVertex = vertex;
+                    }
                 }
+                endVertexNum++;
+                endVertices[endVertexNum] = endVertex;
+                
             }
         }
-        return endVertex;
+
+        // the nunmber of end vertices is stored as the first element in the BFS array
+        endVertices[0] = endVertexNum;
+        return endVertices;
     }
+
 
     /**
      * UPDATED
@@ -64,14 +85,15 @@ public class GraphSearch {
      *
      * @param g:      the input graph, assumed to be connected
      * @param source: the starting vertex, default to be 0
-     * @return the level of each vertex
+     * @param visited
+     * @return Vertices in the largest level. The first element is the number of verteices in the largest level.
      */
-    private static int[] BFS(Graph g) {
+    private static int[] BFS(Graph g, int source, boolean[] visited) {
         LinkedList[] adj = g.adjlist;
         int V = g.vertexNum;
 
-        // Mark all the vertices as not visited(By default set as false)
-        boolean visited[] = new boolean[V];
+        
+        // boolean visited[] = new boolean[V];
 
         // Create a queue for BFS
         LinkedList<Integer> queue = new LinkedList<Integer>();
@@ -81,10 +103,14 @@ public class GraphSearch {
         int[] level = new int[V + 1];
 
         // Mark the first node as visited and enqueue it
-        visited[0] = true;
-        queue.add(0);
-        level[0] = 0;
+        visited[source] = true;
+        queue.add(source);
+        level[source] = 0;
+
         int largestLevel = 0;
+        int[] largestLevelVertices = new int[V+1];
+        largestLevelVertices[1] = source;
+        int largestLevelVerticesNum = 1;
 
         while (queue.size() != 0) {
             // Dequeue a vertex from queue and print it
@@ -99,14 +125,21 @@ public class GraphSearch {
                     visited[j] = true;
                     queue.add(j);
                     level[j] = level[s] + 1;
-                    if (level[j] > largestLevel)
+                    if (level[j] > largestLevel){
                         largestLevel = level[j];
+                        largestLevelVerticesNum = 1;
+                        largestLevelVertices[largestLevelVerticesNum] = j;
+                    }else if (level[j] == largestLevel){
+                        largestLevelVerticesNum++;
+                        largestLevelVertices[largestLevelVerticesNum] = j;
+                    }
+                        
                 }
             }
         }
 
-        level[V] = largestLevel;
-        return level;
+        largestLevelVertices[0] = largestLevelVerticesNum;
+        return largestLevelVertices;
     }
 
     /**
@@ -199,7 +232,7 @@ public class GraphSearch {
 
     /**
      * UPDATED
-     * Input: A connected graph G.
+     * Input: A graph G.
      * Output: Whether G is a unit interval graph.
      * 
      * Figure 7: A two-sweep recognition algorithm for unit interval graphs.
@@ -209,21 +242,16 @@ public class GraphSearch {
      */
     public static boolean twoSweepUIG(Graph g) {
 
-        for (Graph graph : g.connectedComponents) {
-            if (!twoSweepUIG_cc(graph))
-                return false;
+        int u[] = findendVertex(g);
+        int connectedComponents = u[0];
+        // System.out.println(connectedComponents);
+        for(int i = 1; i<=connectedComponents;i++){
+            int endvertex = u[i];
+            int[] sigma = LBFSdelta(g, endvertex);
+            int[] sigma_new = Functions.transferIE(sigma);
+            if (!intervalOrderingChecking(g, sigma_new, true)) return false;
         }
         return true;
-
-    }
-
-    public static boolean twoSweepUIG_cc(Graph g) {
-
-        int u = findendVertex(g);
-        int[] sigma = LBFSdelta(g, u);
-        int[] sigma_new = Functions.transferIE(sigma);
-        return intervalOrderingChecking(g, sigma_new, true);
-
     }
 
     public static boolean interval_recognition(Graph g) {
@@ -658,11 +686,11 @@ public class GraphSearch {
                 int end = list.getFirst();
                 if (end < lastend) end = i;
                 if ( end < lastend){
-                    for(int j = 0; j<list.size(); j++){
-                        System.out.print(list.get(j));
-                    }
-                    System.out.println();
-                    System.out.println(end+" "+ lastend);
+                    // for(int j = 0; j<list.size(); j++){
+                    //     System.out.print(list.get(j));
+                    // }
+                    // System.out.println();
+                    // System.out.println(end+" "+ lastend);
                     return false;
                 }
                 lastend = end;
