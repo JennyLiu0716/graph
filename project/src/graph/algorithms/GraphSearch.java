@@ -18,9 +18,6 @@ import utils.Functions;
  * 
  *         Todo: the GraphSearch class now can only be used for connected graph
  *         recognition
- *         Idea: Detect the connected components in the disconnected graph, for
- *         each component, run the algorithm, the graph is a UIG(IG) if and only
- *         if every connected component is a UIG(IG)
  * 
  */
 public class GraphSearch {
@@ -31,8 +28,8 @@ public class GraphSearch {
      * Lemma 3.7 - Let G be unit interval graph. Let T be a BFS tree of G. A vertex
      * in the last level With the minimum degree is an end vertex.
      * 
-     * Since there can be disconnected graph, we return a list of end vertices. Each vertex
-     * in the list is an end vertex in a connected component. 
+     * Since there can be disconnected graph, we return a list of end vertices. Each
+     * vertex in the list is an end vertex in a connected component.
      * 
      * @param g: the input graph
      * @return end vertices list
@@ -45,28 +42,27 @@ public class GraphSearch {
         // Mark all the vertices as not visited(By default set as false)
         boolean visited[] = new boolean[n];
 
-        int[] endVertices = new int[n+1];
+        int[] endVertices = new int[n + 1];
         int endVertexNum = 0;
 
-        for(int j = 0; j<n; j++){
-            if (!visited[j]){
-                int[] largestLevelVertices = BFS(g,j, visited);
+        for (int j = 0; j < n; j++) {
+            if (!visited[j]) {
+                int[] largestLevelVertices = BFS(g, j, visited);
                 int largestLevelVerticesNum = largestLevelVertices[0];
 
                 int mindegree = n;
                 int endVertex = -1;
-                
 
-                for(int i = 1; i<=largestLevelVerticesNum;i++){
+                for (int i = 1; i <= largestLevelVerticesNum; i++) {
                     int vertex = largestLevelVertices[i];
-                    if (adj[vertex].size() < mindegree){
+                    if (adj[vertex].size() < mindegree) {
                         mindegree = adj[vertex].size();
                         endVertex = vertex;
                     }
                 }
                 endVertexNum++;
                 endVertices[endVertexNum] = endVertex;
-                
+
             }
         }
 
@@ -75,7 +71,6 @@ public class GraphSearch {
         return endVertices;
     }
 
-
     /**
      * UPDATED
      * a modified BFS, which records the level of each node in the BFS tree and the
@@ -83,16 +78,15 @@ public class GraphSearch {
      * 
      * https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/
      *
-     * @param g:      the input graph, assumed to be connected
-     * @param source: the starting vertex, default to be 0
-     * @param visited
-     * @return Vertices in the largest level. The first element is the number of verteices in the largest level.
+     * @param g:       the input graph
+     * @param source:  the starting vertex
+     * @param visited: a boolean list to record whether a node has been visited
+     * @return a list of vertices in the largest level in this connected BFS tree
      */
     private static int[] BFS(Graph g, int source, boolean[] visited) {
         LinkedList[] adj = g.adjlist;
         int V = g.vertexNum;
 
-        
         // boolean visited[] = new boolean[V];
 
         // Create a queue for BFS
@@ -108,7 +102,7 @@ public class GraphSearch {
         level[source] = 0;
 
         int largestLevel = 0;
-        int[] largestLevelVertices = new int[V+1];
+        int[] largestLevelVertices = new int[V + 1];
         largestLevelVertices[1] = source;
         int largestLevelVerticesNum = 1;
 
@@ -125,15 +119,15 @@ public class GraphSearch {
                     visited[j] = true;
                     queue.add(j);
                     level[j] = level[s] + 1;
-                    if (level[j] > largestLevel){
+                    if (level[j] > largestLevel) {
                         largestLevel = level[j];
                         largestLevelVerticesNum = 1;
                         largestLevelVertices[largestLevelVerticesNum] = j;
-                    }else if (level[j] == largestLevel){
+                    } else if (level[j] == largestLevel) {
                         largestLevelVerticesNum++;
                         largestLevelVertices[largestLevelVerticesNum] = j;
                     }
-                        
+
                 }
             }
         }
@@ -198,7 +192,7 @@ public class GraphSearch {
 
     /**
      * UPDATED
-     * Input: A connected graph G.
+     * Input: A graph G.
      * Output: Whether G is a unit interval graph.
      * 
      * Figure 6: The three-sweep recognition algorithm for unit interval graphs
@@ -233,17 +227,26 @@ public class GraphSearch {
     public static boolean twoSweepUIG(Graph g) {
 
         int u[] = findendVertex(g);
-        int new_u[]  = Functions.deleteFirstElement(u);
+        int new_u[] = Functions.deleteFirstElement(u);
 
         int[] sigma = LBFSdelta(g, new_u);
         int[] sigma_new = Functions.transferIE(sigma);
 
-        if (!intervalOrderingChecking(g, sigma_new, true)) return false;
+        if (!intervalOrderingChecking(g, sigma_new, true))
+            return false;
 
         return true;
     }
 
-
+    /**
+     * Input : A graph G
+     * Output : Whether G is a interval graph
+     * 
+     * Figure 12: The recognition algorithm for interval graphs
+     * 
+     * @param g
+     * @return
+     */
     public static boolean interval_recognition(Graph g) {
         int[] t = LBFS(g);
         int[] t_new = Functions.transferIE(t);
@@ -305,21 +308,35 @@ public class GraphSearch {
      * Since LBFS plus and LBFS sigma are similar to the basic LBFS, we add some
      * parameters to integrate them together
      * 
-     * @param adj         - adjacency list for graph
+     * For connected and disconnected graph, the procedure LBFSup and LBFS plus and
+     * LBFS are the same.Since if the super node is not the initial list, that means
+     * it is processing a connected component.
+     * While if finishes a connected component, the super node is the initial linked
+     * list, and it should get the vertex according to the corresponding rule.
+     * 
+     * For LBFS delta, there is a slight different when choosing the out vertex in
+     * the initial linked list, it should choose the vertex that is an end vertex.
+     * That means we should choose out vertex in the parameter {@code outlist}. So,
+     * an additional index pointer is used.
+     * 
+     * 
+     * @param adjgraph    - adjacency list for graph
      * @param permutation - [0,1,...,n] for LBFS
      * @param out         - vertex to take out at the first step, 0 for LBFS
+     * @param outlist     - end vertices used for LBFS delta algorithm
      * @param plus        - whether this is LBFS plus algorithm
      * @param delta       - whether this is LBFS delta algorithm
      * @param up          - whether this is LBFS up algorithm
      * @return
      */
-    private static int[] basicLBFS(LinkedList<Integer>[] adjgraph, int[] permutation, int out, int[] outlist, boolean plus,
+    private static int[] basicLBFS(LinkedList<Integer>[] adjgraph, int[] permutation, int out, int[] outlist,
+            boolean plus,
             boolean delta, boolean up) {
 
         int vertexNum = permutation.length;
 
-        // used for LBFS delta 
-        int outindex = 0; 
+        // used for LBFS delta
+        int outindex = 0;
 
         // used for LBFS up
         int[] inverse_permutation = Functions.transferIE(permutation);
@@ -454,9 +471,10 @@ public class GraphSearch {
                         outNode = vq;
                 }
 
-            } else if (delta == true){
-                if (superNode==initial_linkedlist){
+            } else if (delta == true) {
+                if (superNode == initial_linkedlist) {
                     // new connected component starts
+                    // for each connected component, it should start with the end vertex.
                     outNode = nodes[outlist[outindex]];
                     outindex++;
                     // debug++;
@@ -619,7 +637,9 @@ public class GraphSearch {
      * . . . ,i + 1], where f(i) is the first number in the list
      * 
      * @param g
-     * @param sigma
+     * @param vertexOrder
+     * @param unit        - whether it is a unit interval graph or just interval
+     *                    graph checking
      * @return
      */
     public static boolean intervalOrderingChecking(Graph g, int[] vertexOrder, boolean unit) {
@@ -672,15 +692,16 @@ public class GraphSearch {
             int lastend = -1;
             for (int i = 0; i < vertexNum; i++) {
                 LinkedList<Integer> list = newadj[i];
-                if (list.isEmpty()){
+                if (list.isEmpty()) {
                     continue;
                     // return false;
                 }
                 int end = list.getFirst();
-                if (end < lastend) end = i;
-                if ( end < lastend){
+                if (end < lastend)
+                    end = i;
+                if (end < lastend) {
                     // for(int j = 0; j<list.size(); j++){
-                    //     System.out.print(list.get(j));
+                    // System.out.print(list.get(j));
                     // }
                     // System.out.println();
                     // System.out.println(end+" "+ lastend);
@@ -688,7 +709,7 @@ public class GraphSearch {
                 }
                 lastend = end;
                 // for(int j = 0; j<list.size(); j++){
-                //     System.out.print(list.get(j));
+                // System.out.print(list.get(j));
                 // }
                 // System.out.println();
             }
@@ -713,25 +734,4 @@ public class GraphSearch {
         return true;
     }
 
-    /**
-     * Check whether an integer array is a correct permutation of [1..n].
-     *
-     * @param sigma
-     *              an integer array
-     * @return true if sigma is a permutation
-     **/
-    public static boolean isPermutation(int[] sigma) {
-        return false;
-    }
-
-    /**
-     * The algorithm maximum cardinality search.
-     *
-     * @param g
-     *          the input graph
-     * @return an mcs ordering of g.
-     **/
-    public static int[] mcs(Graph g) {
-        return null;
-    }
 }

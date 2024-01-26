@@ -59,7 +59,7 @@ public class Graph {
      * @throws FileNotFoundException when the file cannot be found.
      */
     @SuppressWarnings("unchecked")
-	public void readFile(String path) throws FileNotFoundException {
+    public void readFile(String path) throws FileNotFoundException {
         File file = new File(path);
         Scanner sc = new Scanner(file);
         String curline = sc.nextLine();
@@ -115,6 +115,5 @@ public class Graph {
         sc.close();
 
     }
-
 
 }
