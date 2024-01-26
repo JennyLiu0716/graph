@@ -208,16 +208,6 @@ public class GraphSearch {
      */
     public static boolean threeSweepUIG(Graph g) {
 
-        for (Graph graph : g.connectedComponents) {
-            if (!threeSweepUIG_cc(graph))
-                return false;
-        }
-
-        return true;
-    }
-
-    public static boolean threeSweepUIG_cc(Graph g) {
-
         int[] t = LBFS(g);
         int[] t_new = Functions.transferIE(t);
 
@@ -243,26 +233,18 @@ public class GraphSearch {
     public static boolean twoSweepUIG(Graph g) {
 
         int u[] = findendVertex(g);
-        int connectedComponents = u[0];
-        // System.out.println(connectedComponents);
-        for(int i = 1; i<=connectedComponents;i++){
-            int endvertex = u[i];
-            int[] sigma = LBFSdelta(g, endvertex);
-            int[] sigma_new = Functions.transferIE(sigma);
-            if (!intervalOrderingChecking(g, sigma_new, true)) return false;
-        }
+        int new_u[]  = Functions.deleteFirstElement(u);
+
+        int[] sigma = LBFSdelta(g, new_u);
+        int[] sigma_new = Functions.transferIE(sigma);
+
+        if (!intervalOrderingChecking(g, sigma_new, true)) return false;
+
         return true;
     }
+
 
     public static boolean interval_recognition(Graph g) {
-        for (Graph graph : g.connectedComponents) {
-            if (!interval_recognition_cc(graph))
-                return false;
-        }
-        return true;
-    }
-
-    public static boolean interval_recognition_cc(Graph g) {
         int[] t = LBFS(g);
         int[] t_new = Functions.transferIE(t);
 
@@ -281,21 +263,21 @@ public class GraphSearch {
 
     private static int[] LBFS(Graph g) {
         int[] permutation = IntStream.range(0, g.vertexNum).toArray();
-        return basicLBFS(g.adjlist, permutation, 0, false, false, false);
+        return basicLBFS(g.adjlist, permutation, 0, null, false, false, false);
     }
 
     private static int[] LBFSplus(Graph g, int[] permutation) {
-        return basicLBFS(g.adjlist, permutation, -1, true, false, false);
+        return basicLBFS(g.adjlist, permutation, -1, null, true, false, false);
     }
 
-    private static int[] LBFSdelta(Graph g, int out) {
+    private static int[] LBFSdelta(Graph g, int[] out) {
         // this permutation is sorted vertices by degree from small to large
         int[] permutation = getDegreeOrder(g);
-        return basicLBFS(g.adjlist, permutation, out, false, true, false);
+        return basicLBFS(g.adjlist, permutation, -1, out, false, true, false);
     }
 
     private static int[] LBFSup(Graph g, int[] permutation) {
-        return basicLBFS(g.adjlist, permutation, -1, true, false, true);
+        return basicLBFS(g.adjlist, permutation, -1, null, true, false, true);
     }
 
     /**
@@ -331,10 +313,13 @@ public class GraphSearch {
      * @param up          - whether this is LBFS up algorithm
      * @return
      */
-    private static int[] basicLBFS(LinkedList<Integer>[] adjgraph, int[] permutation, int out, boolean plus,
+    private static int[] basicLBFS(LinkedList<Integer>[] adjgraph, int[] permutation, int out, int[] outlist, boolean plus,
             boolean delta, boolean up) {
 
         int vertexNum = permutation.length;
+
+        // used for LBFS delta 
+        int outindex = 0; 
 
         // used for LBFS up
         int[] inverse_permutation = Functions.transferIE(permutation);
@@ -379,13 +364,6 @@ public class GraphSearch {
                 adj_copy_track[i][j] = node;
             }
         }
-
-        // correct adj
-        // for(int i=0;i<adj.length;i++){
-        // for(int j:adj[i]){
-        // System.out.print(j+",");
-        // }System.out.println();
-        // }
 
         // sigma -> LBFS ordering to be returned.
         // index -> vertex number;
@@ -437,6 +415,8 @@ public class GraphSearch {
         // initial_node correct
         // ((DoublyLinkedList) initial_node.element).display();
 
+        // int debug =0;
+
         // LBFS core:
         // Select the vertex to be taken out, move it from the linked list
         // Move all its neighbors in the lists to a higher precedence (adding to get a
@@ -453,8 +433,10 @@ public class GraphSearch {
             // 2.2. v ← the last vertex of σ|S;
             // for each small linked list, by implementation it is sorted by permutation
             if (plus == true) {
+                // both ok for connected and disconnected
                 outNode = superNode.tail;
             } else if (up == true) {
+                // both ok for connected and disconnected
                 if (superNode.head == superNode.tail) {
                     outNode = superNode.head;
                 } else {
@@ -472,6 +454,15 @@ public class GraphSearch {
                         outNode = vq;
                 }
 
+            } else if (delta == true){
+                if (superNode==initial_linkedlist){
+                    // new connected component starts
+                    outNode = nodes[outlist[outindex]];
+                    outindex++;
+                    // debug++;
+                } else {
+                    outNode = superNode.head;
+                }
             } else {
                 // take out the node:
                 // 1st time: arbitrary
@@ -486,6 +477,7 @@ public class GraphSearch {
                 // For LBFS delta, the permutation is by the degree of the vertices from small
                 // to large
 
+                // both ok for connected and disconnected
                 if (i == 0) {
                     outNode = nodes[out];
                 } else {
@@ -607,6 +599,7 @@ public class GraphSearch {
                 lexicographical_linkedlist.delete(node);
 
         }
+        // System.out.println(debug+","+outlist.length);
 
         return sigma;
     }

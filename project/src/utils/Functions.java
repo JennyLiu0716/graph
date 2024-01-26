@@ -127,4 +127,14 @@ public class Functions {
         return arr;
 
     }
+
+    public static int[] deleteFirstElement(int[] list){
+        
+        int length = list[0];
+        int[] newlist = new int[length];
+        for(int i = 1; i<= length; i++){
+            newlist[i-1] = list[i];
+        }
+        return newlist;
+    }
 }
